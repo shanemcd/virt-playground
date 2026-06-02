@@ -4,33 +4,32 @@ How all the pieces fit together: upstream projects, operators, components, and t
 
 ## The Big Picture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   OpenShift Virtualization                   │
-│                        (Product)                            │
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │           HyperConverged Operator (HCO)               │  │
-│  │         kubevirt/hyperconverged-cluster-operator       │  │
-│  │                                                       │  │
-│  │  Creates and manages child CRs for:                   │  │
-│  │                                                       │  │
-│  │  ┌─────────────┐  ┌─────────┐  ┌──────────────────┐  │  │
-│  │  │  KubeVirt   │  │   CDI   │  │  Cluster Network │  │  │
-│  │  │  Operator   │  │Operator │  │  Addons Operator  │  │  │
-│  │  └──────┬──────┘  └────┬────┘  └────────┬─────────┘  │  │
-│  │         │              │                │             │  │
-│  │  ┌──────┐  ┌───────┐  ┌─────┐  ┌───────────────┐    │  │
-│  │  │ SSP  │  │  AAQ  │  │ HPP │  │  Migration    │    │  │
-│  │  │ Op.  │  │  Op.  │  │ Op. │  │  Controller   │    │  │
-│  │  └──────┘  └───────┘  └─────┘  └───────────────┘    │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │       Migration Toolkit for Virtualization (MTV)       │  │
-│  │              kubev2v/forklift                          │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    HCO["HyperConverged Operator (HCO)"] --> KV["KubeVirt Operator"]
+    HCO --> CDI["CDI Operator"]
+    HCO --> SSP["SSP Operator"]
+    HCO --> CNA["Network Addons Operator"]
+    HCO --> AAQ["AAQ Operator"]
+    HCO --> HPP["HPP Operator"]
+    HCO --> MIG["Migration Controller"]
+
+    KV --> vctrl["virt-controller"]
+    KV --> vhandler["virt-handler"]
+    vctrl --> vlauncher["virt-launcher + QEMU/KVM"]
+
+    CDI --> cdiimp["cdi-importer"]
+
+    MTV["MTV / Forklift Operator"] --> fctrl["forklift-controller"]
+    fctrl --> inv["Provider Inventory"]
+    fctrl --> v2v["virt-v2v"]
+
+    inv -->|vSphere SDK| vmware["VMware"]
+    inv -->|oVirt API| ovirt["RHV"]
+    inv -->|OpenStack API| ostack["OpenStack"]
+
+    v2v --> cdiimp
+    cdiimp --> vlauncher
 ```
 
 ## Core Platform: KubeVirt and Friends
