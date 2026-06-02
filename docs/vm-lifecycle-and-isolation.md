@@ -221,6 +221,16 @@ Everything above isolates the guest from the host at the hardware/kernel level. 
 - SELinux confines the QEMU process to a specific security context, limiting which files, sockets, and system calls it can access, even if it runs as root
 - seccomp filters restrict the system calls QEMU can make, reducing the kernel attack surface
 
+**Device access via the Kubernetes device plugin API:**
+
+The compute container drops all capabilities, runs as non-root (UID 107), and disallows privilege escalation. So how does QEMU access `/dev/kvm`? KubeVirt uses the Kubernetes device plugin API to expose host devices as schedulable resources, the same mechanism GPUs use (`nvidia.com/gpu`). The virt-handler DaemonSet registers three device plugins with the kubelet:
+
+- `devices.kubevirt.io/kvm` - grants access to `/dev/kvm`
+- `devices.kubevirt.io/tun` - grants access to `/dev/net/tun` (for TAP networking)
+- `devices.kubevirt.io/vhost-net` - grants access to `/dev/vhost-net` (for in-kernel virtio-net backend)
+
+When virt-controller creates the virt-launcher pod spec, it includes these as resource requests. The kubelet mounts only the specific device nodes into the container, nothing else. The container gets the minimum device access QEMU needs to function, without any broad privilege grants.
+
 ### How the Layers Compose
 
 Each layer defends against a different failure mode:

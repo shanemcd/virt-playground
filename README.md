@@ -25,3 +25,8 @@ This repo documents how the full virtualization stack works, from hardware-assis
 #### CRC (CodeReady Containers)
 
 - [01 - Install OpenShift Virtualization](labs/crc/01-install-openshift-virtualization.md) - Deploy the operator and HyperConverged CR on a local single-node cluster
+- [02 - Create a VM](labs/crc/02-create-vm.md) - Create a Fedora VM with SSH keys, explore the three-object model and virt-launcher internals
+
+#### ESXi
+
+- [01 - Nested ESXi Setup](labs/esxi/01-nested-esxi-setup.md) - Run ESXi 8.0U3e as a KVM guest, create a Fedora Cloud VM with cloud-init, lessons on disk formats and driver compatibility
