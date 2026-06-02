@@ -19,6 +19,7 @@ This repo documents how the full virtualization stack works, from hardware-assis
 
 - [VMware Comparison](docs/vmware-comparison.md) - Architectural differences and conceptual mappings between vSphere and OpenShift Virtualization
 - [Migration Toolkit](docs/migration-toolkit.md) - MTV: migrating VMs from vSphere, RHV, and OpenStack into OpenShift Virtualization
+- [Ecosystem Map](docs/ecosystem-map.md) - All the projects, repos, and components in the virt space and how they fit together
 
 ### Labs
 
