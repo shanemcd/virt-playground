@@ -36,7 +36,7 @@ graph TD
 
 These are the projects that make VMs run on Kubernetes.
 
-### kubevirt/kubevirt
+### [kubevirt/kubevirt](https://github.com/kubevirt/kubevirt)
 
 The core. Extends the Kubernetes API with VM management. Provides:
 - CRDs: VirtualMachine, VirtualMachineInstance, VirtualMachineInstanceReplicaSet, VirtualMachinePool, VirtualMachineInstanceMigration
@@ -44,21 +44,21 @@ The core. Extends the Kubernetes API with VM management. Provides:
 - Language: Go
 - CNCF sandbox project
 
-### kubevirt/containerized-data-importer (CDI)
+### [kubevirt/containerized-data-importer](https://github.com/kubevirt/containerized-data-importer) (CDI)
 
 Manages VM disk lifecycle. Imports disk images into PVCs from HTTP, registries, other PVCs, uploads, and hypervisor-specific sources. Provides:
 - CRDs: DataVolume, DataSource, DataImportCron
 - Components: cdi-operator, cdi-controller, cdi-apiserver, cdi-uploadproxy, cdi-importer
 - Language: Go
 
-### kubevirt/hyperconverged-cluster-operator (HCO)
+### [kubevirt/hyperconverged-cluster-operator](https://github.com/kubevirt/hyperconverged-cluster-operator) (HCO)
 
 The "operator of operators." Single entry point for deploying the entire stack. One `HyperConverged` CR creates child CRs for all sub-operators with opinionated defaults.
 - CRDs: HyperConverged
 - Manages: KubeVirt, CDI, SSP, Cluster Network Addons, HPP, AAQ, Migration Controller
 - Language: Go
 
-### kubevirt/ssp-operator (SSP)
+### [kubevirt/ssp-operator](https://github.com/kubevirt/ssp-operator) (SSP)
 
 Scheduling, Scale, and Performance. Deploys:
 - Common VM templates (RHEL, Fedora, CentOS, Windows)
@@ -68,7 +68,7 @@ Scheduling, Scale, and Performance. Deploys:
 - CRDs: SSP
 - Language: Go
 
-### kubevirt/cluster-network-addons-operator
+### [kubevirt/cluster-network-addons-operator](https://github.com/kubevirt/cluster-network-addons-operator)
 
 Deploys additional networking components:
 - Linux bridge CNI plugin
@@ -78,28 +78,28 @@ Deploys additional networking components:
 - CRDs: NetworkAddonsConfig
 - Language: Go
 
-### kubevirt/hostpath-provisioner (HPP)
+### [kubevirt/hostpath-provisioner](https://github.com/kubevirt/hostpath-provisioner) (HPP)
 
 Local storage provisioner for development/edge environments. Provides a StorageClass backed by node-local paths. What CRC uses for VM disks.
 - CRDs: HostPathProvisioner
 - Language: Go
 
-### kubevirt/application-aware-quota (AAQ)
+### [kubevirt/application-aware-quota](https://github.com/kubevirt/application-aware-quota) (AAQ)
 
 Extends Kubernetes ResourceQuota to be aware of VM workloads. Prevents overcommitting cluster resources with VMs.
 - CRDs: AAQ
 - Language: Go
 
-### kubevirt/kubevirt-migration-controller + kubevirt-migration-operator
+### [kubevirt/kubevirt-migration-controller](https://github.com/kubevirt/kubevirt-migration-controller) + [kubevirt-migration-operator](https://github.com/kubevirt/kubevirt-migration-operator)
 
 Newer projects (created October 2025). Handle cross-cluster and decentralized live migration of VMs between OpenShift clusters. This is the underlying mechanism for MTV's cluster-to-cluster live migration feature.
 - Language: Go
 
-### kubevirt/common-instancetypes
+### [kubevirt/common-instancetypes](https://github.com/kubevirt/common-instancetypes)
 
 Predefined instance types (CPU/memory combinations) and preferences (OS-specific tuning). Analogous to cloud instance types (m5.large, etc.). Ships with OCP Virt via the SSP operator.
 
-### kubevirt/common-templates
+### [kubevirt/common-templates](https://github.com/kubevirt/common-templates)
 
 VM templates for various guest operating systems. Being gradually replaced by instance types + preferences but still in use.
 
@@ -107,7 +107,7 @@ VM templates for various guest operating systems. Being gradually replaced by in
 
 These are the projects that move VMs from other hypervisors to KubeVirt.
 
-### kubev2v/forklift
+### [kubev2v/forklift](https://github.com/kubev2v/forklift)
 
 The core migration toolkit. An operator + controller that orchestrates VM migrations from VMware vSphere, Red Hat Virtualization, OpenStack, OVA files, Hyper-V, EC2, and other OpenShift Virtualization clusters.
 
@@ -132,53 +132,53 @@ Supported source providers:
 | EC2 (AWS) | Yes | No | No |
 | OpenShift Virtualization | Yes | No | Yes |
 
-### kubev2v/migration-planner
+### [kubev2v/migration-planner](https://github.com/kubev2v/migration-planner)
 
 Pre-migration assessment tool. Helps inventory and evaluate VMware environments before migration. Discovers VMs, analyzes compatibility, and estimates migration effort.
 
-### kubev2v/forklift-console-plugin
+### [kubev2v/forklift-console-plugin](https://github.com/kubev2v/forklift-console-plugin)
 
 OpenShift console UI plugin for MTV. Adds the Migration section to the OpenShift web console.
 
-### kubev2v/forklift-must-gather
+### [kubev2v/forklift-must-gather](https://github.com/kubev2v/forklift-must-gather)
 
 Diagnostic data collection for MTV. Used for support and troubleshooting.
 
 ## Ansible Integration
 
-### kubevirt/kubevirt.core
+### [kubevirt/kubevirt.core](https://github.com/kubevirt/kubevirt.core)
 
 Upstream Ansible collection for KubeVirt. Modules: kubevirt_vm, kubevirt_vm_info, kubevirt_vmi_info, plus a dynamic inventory plugin. Downstream certified as `redhat.openshift_virtualization` on Automation Hub.
 
-### redhat-cop/openshift_virtualization_migration
+### [redhat-cop/openshift_virtualization_migration](https://github.com/redhat-cop/openshift_virtualization_migration)
 
 Validated Ansible collection for migration workflows. 18 roles covering MTV management, migration execution, validation, Day 2 operations. Uses `kubernetes.core.k8s` to programmatically create Forklift CRDs.
 
-### redhat-cop/openshift_virtualization_ops
+### [redhat-cop/openshift_virtualization_ops](https://github.com/redhat-cop/openshift_virtualization_ops)
 
 Day 2 operations collection: backup/restore, hot-plug, lifecycle, networking, patching.
 
 ## Networking Components
 
-### kubevirt/bridge-marker
+### [kubevirt/bridge-marker](https://github.com/kubevirt/bridge-marker)
 
 DaemonSet that detects Linux bridges on nodes and labels nodes accordingly. Used by the scheduler to place VMs on nodes with the correct bridge configuration.
 
-### kubevirt/macvtap-cni
+### [kubevirt/macvtap-cni](https://github.com/kubevirt/macvtap-cni)
 
 CNI plugin for macvtap networking. Connects VMs directly to the host's physical network interface via macvtap, providing better performance than bridge networking.
 
-### kubevirt/kubesecondarydns
+### [kubevirt/kubesecondarydns](https://github.com/kubevirt/kubesecondarydns)
 
 DNS for secondary networks. Provides DNS resolution for VMs on Multus secondary networks.
 
-### kubevirt/ipam-extensions
+### [kubevirt/ipam-extensions](https://github.com/kubevirt/ipam-extensions)
 
 IP address management extensions for KubeVirt networks.
 
 ## Storage Components
 
-### kubevirt/csi-driver
+### [kubevirt/csi-driver](https://github.com/kubevirt/csi-driver)
 
 CSI driver that exposes KubeVirt VMs' disks as PVs. Used when running Kubernetes inside a KubeVirt VM (nested clusters).
 
@@ -186,14 +186,14 @@ CSI driver that exposes KubeVirt VMs' disks as PVs. Used when running Kubernetes
 
 | Upstream Project | Downstream Product | Notes |
 |-----------------|-------------------|-------|
-| kubevirt/kubevirt | OpenShift Virtualization | Core VM runtime |
-| kubevirt/containerized-data-importer | OpenShift Virtualization | Bundled via HCO |
-| kubevirt/hyperconverged-cluster-operator | OpenShift Virtualization | The install entry point |
-| kubevirt/ssp-operator | OpenShift Virtualization | Templates, boot sources |
-| kubevirt/cluster-network-addons-operator | OpenShift Virtualization | Bundled via HCO |
-| kubevirt/common-instancetypes | OpenShift Virtualization | Deployed by SSP |
-| kubev2v/forklift | Migration Toolkit for Virtualization (MTV) | Separate operator |
-| kubevirt/kubevirt.core | redhat.openshift_virtualization | Ansible collection |
+| [kubevirt/kubevirt](https://github.com/kubevirt/kubevirt) | OpenShift Virtualization | Core VM runtime |
+| [kubevirt/containerized-data-importer](https://github.com/kubevirt/containerized-data-importer) | OpenShift Virtualization | Bundled via HCO |
+| [kubevirt/hyperconverged-cluster-operator](https://github.com/kubevirt/hyperconverged-cluster-operator) | OpenShift Virtualization | The install entry point |
+| [kubevirt/ssp-operator](https://github.com/kubevirt/ssp-operator) | OpenShift Virtualization | Templates, boot sources |
+| [kubevirt/cluster-network-addons-operator](https://github.com/kubevirt/cluster-network-addons-operator) | OpenShift Virtualization | Bundled via HCO |
+| [kubevirt/common-instancetypes](https://github.com/kubevirt/common-instancetypes) | OpenShift Virtualization | Deployed by SSP |
+| [kubev2v/forklift](https://github.com/kubev2v/forklift) | Migration Toolkit for Virtualization (MTV) | Separate operator |
+| [kubevirt/kubevirt.core](https://github.com/kubevirt/kubevirt.core) | redhat.openshift_virtualization | Ansible collection |
 
 ## GitHub Organizations
 
