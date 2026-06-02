@@ -22,12 +22,11 @@ This repo documents how the full virtualization stack works, from hardware-assis
 
 ### Labs
 
-#### CRC (CodeReady Containers)
+#### CRC + ESXi + MTV
 
-- [01 - Install OpenShift Virtualization](labs/crc/01-install-openshift-virtualization.md) - Deploy the operator and HyperConverged CR on a local single-node cluster
-- [02 - Create a VM](labs/crc/02-create-vm.md) - Create a Fedora VM with SSH keys, explore the three-object model and virt-launcher internals
+End-to-end lab: install OpenShift Virtualization on CRC, set up a nested ESXi host, and migrate a VM using MTV.
 
-#### ESXi
-
-- [01 - Nested ESXi Setup](labs/esxi/01-nested-esxi-setup.md) - Run ESXi 8.0U3e as a KVM guest, create a Fedora Cloud VM with cloud-init, lessons on disk formats and driver compatibility
-- [02 - Migrate VM with MTV](labs/esxi/02-migrate-vm-with-mtv.md) - End-to-end migration from ESXi to OpenShift Virtualization using MTV and VDDK
+- [01 - Install OpenShift Virtualization](labs/crc-esxi-mtv/01-install-openshift-virtualization.md) - Deploy the operator and HyperConverged CR on a local single-node cluster
+- [02 - Create a VM on OCP Virt](labs/crc-esxi-mtv/02-create-vm-on-ocp-virt.md) - Create a Fedora VM with SSH keys, explore the three-object model and virt-launcher internals
+- [03 - Nested ESXi Setup](labs/crc-esxi-mtv/03-nested-esxi-setup.md) - Run ESXi 8.0U3e as a KVM guest, create a Fedora Cloud VM with cloud-init
+- [04 - Migrate VM with MTV](labs/crc-esxi-mtv/04-migrate-vm-with-mtv.md) - End-to-end migration from ESXi to OpenShift Virtualization using MTV and VDDK

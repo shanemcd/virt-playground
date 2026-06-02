@@ -4,8 +4,8 @@ Migrate a Fedora VM from a nested ESXi host to OpenShift Virtualization on CRC u
 
 ## Prerequisites
 
-- CRC cluster with OpenShift Virtualization installed ([lab 01](../crc/01-install-openshift-virtualization.md))
-- ESXi host with a VM to migrate ([lab 01](01-nested-esxi-setup.md))
+- CRC cluster with OpenShift Virtualization installed ([lab 01](01-install-openshift-virtualization.md))
+- ESXi host with a VM to migrate ([lab 03](03-nested-esxi-setup.md))
 - ESXi must have a paid license (Essentials or higher) for full API and vStorage access
 - CRC node can reach ESXi over the network
 - VDDK SDK downloaded from [developer.broadcom.com](https://developer.broadcom.com/sdks/vmware-virtual-disk-development-kit-vddk/latest)
