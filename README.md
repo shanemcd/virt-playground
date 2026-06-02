@@ -30,3 +30,4 @@ This repo documents how the full virtualization stack works, from hardware-assis
 #### ESXi
 
 - [01 - Nested ESXi Setup](labs/esxi/01-nested-esxi-setup.md) - Run ESXi 8.0U3e as a KVM guest, create a Fedora Cloud VM with cloud-init, lessons on disk formats and driver compatibility
+- [02 - Migrate VM with MTV](labs/esxi/02-migrate-vm-with-mtv.md) - End-to-end migration from ESXi to OpenShift Virtualization using MTV and VDDK
