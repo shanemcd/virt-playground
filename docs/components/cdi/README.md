@@ -93,6 +93,45 @@ The controller binary (`cmd/cdi-controller/controller.go`) registers 14 sub-cont
 
 Like KubeVirt, CDI detects OpenShift (`isOpenShift()` checks for ClusterVersion CRD) and adjusts behavior, adding Route watches and OpenShift-specific cache options.
 
+## HTTP import flow in detail
+
+When you create a DataVolume with an HTTP source, here's what actually happens. Traced from a Fedora 44 cloud image import on CRC with the hostpath provisioner.
+
+### 1. DataVolume and PVC creation
+
+cdi-apiserver validates the DataVolume via a webhook. cdi-controller sees the new DataVolume and creates a PVC with a `dataSourceRef` pointing to a `VolumeImportSource` CR (the volume populator path, enabled by the `WebhookPvcRendering` feature gate).
+
+### 2. WaitForFirstConsumer and the prime PVC
+
+CRC's storage class uses `WaitForFirstConsumer` binding mode, meaning the PVC won't bind until a pod tries to mount it. With the `HonorWaitForFirstConsumer` feature gate, CDI respects this and won't start importing into an unbound PVC.
+
+To break the deadlock, CDI creates a **prime PVC** with immediate binding. This is a temporary PVC that CDI imports into first, then transfers the data to the original PVC once it binds. (In practice, the original PVC also binds during this process.) You can skip this by adding the annotation `cdi.kubevirt.io/storage.bind.immediate.requested: "true"` to the DataVolume, or by creating a VM that references the DataVolume (the virt-launcher pod acts as the first consumer).
+
+### 3. Importer pod
+
+cdi-controller creates an importer pod (`cdi-importer` binary) that mounts the prime PVC. The importer:
+
+1. Starts **nbdkit** with the curl plugin to stream the HTTP download. nbdkit is a lightweight NBD (Network Block Device) server that handles the network transfer.
+2. Validates the image format and size
+3. Copies the data to `/scratch/tmpimage` on the PVC using sparse copy (skipping zero blocks to save space)
+4. Converts the image to the target format if needed (e.g., vmdk to qcow2)
+5. Reports progress via Prometheus metrics, which cdi-controller reads and writes to the DataVolume status
+
+The importer runs as a transient pod. When it finishes, the pod is deleted and the prime PVC data is transferred to the original PVC.
+
+### 4. Cleanup
+
+After import completes:
+- The importer pod is deleted
+- The prime PVC is deleted
+- The `VolumeImportSource` CR is cleaned up
+- The DataVolume phase transitions to `Succeeded`
+- The original PVC is Bound with the imported disk image
+
+### Security context
+
+The importer pod runs as non-root (UID 107), drops all capabilities, and has no host access. It only needs to download data and write to the PVC it mounts. No privilege escalation.
+
 ## Communication
 
 ```
@@ -104,13 +143,29 @@ User
   │                                ▼
   │                          cdi-controller
   │                                │
-  │                                │ (creates pod)
-  │                                ▼
-  │                          cdi-importer pod
-  │                                │
-  │                                │ (writes to PVC)
-  │                                ▼
-  │                             PVC ──► used by virt-launcher
+  │                                ├── creates VolumeImportSource CR
+  │                                ├── creates PVC with dataSourceRef
+  │                                ├── creates prime PVC (if WaitForFirstConsumer)
+  │                                └── creates importer pod
+  │                                          │
+  │                                          ├── nbdkit + curl plugin (HTTP download)
+  │                                          └── writes to prime PVC
+  │                                                    │
+  │                                                    ▼
+  │                                              data transferred to original PVC
+  │                                                    │
+  │                                                    ▼
+  │                                              PVC ──► used by virt-launcher
   │
   └── virtctl image-upload ──► cdi-uploadproxy ──► cdi-uploadserver pod ──► PVC
 ```
+
+## Key code paths
+
+| File | What it does |
+|------|-------------|
+| `cmd/cdi-importer/importer.go` | Importer pod entry point, dispatches to source-specific handlers |
+| `pkg/importer/http-datasource.go` | HTTP import: nbdkit setup, download, validation |
+| `pkg/controller/datavolume/` | DataVolume controllers (import, upload, clone, snapshot-clone, populator) |
+| `pkg/controller/populators/` | Volume populator controllers |
+| `cmd/cdi-controller/controller.go` | Registers all 14 sub-controllers |
