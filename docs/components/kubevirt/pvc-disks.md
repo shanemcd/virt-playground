@@ -33,16 +33,16 @@ The file is always named `disk.img` on the PVC. The `StorageProfile` for the sto
 
 ## Comparison with containerDisks
 
-| | containerDisk | PVC |
-|---|---|---|
-| QEMU blockdev entries | 4 (two-layer backing chain) | 1 (direct file access) |
-| Base image | Read-only, bind-mounted from sidecar container | N/A, the qcow2 file is the only layer |
-| Writes | Ephemeral qcow2 overlay in emptyDir | Directly to the qcow2 on the PVC |
-| Persist across restart | No | Yes |
-| Sidecar container needed | Yes (holds the OCI image overlay FS open) | No |
-| Containers in launcher pod | compute + volumecontainerdisk sidecar | compute only |
-| Live migration | Block migration (must copy entire disk) | Shared storage migration (if RWX access mode) |
-| How the disk gets there | Pulled as an OCI image by kubelet | Imported by CDI, uploaded via virtctl, or manually provisioned |
+|                            | containerDisk                                  | PVC                                                            |
+| -------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
+| QEMU blockdev entries      | 4 (two-layer backing chain)                    | 1 (direct file access)                                         |
+| Base image                 | Read-only, bind-mounted from sidecar container | N/A, the raw file is the only layer                             |
+| Writes                     | Ephemeral qcow2 overlay in emptyDir            | Directly to the raw disk image on the PVC                       |
+| Persist across restart     | No                                             | Yes                                                            |
+| Sidecar container needed   | Yes (holds the OCI image overlay FS open)      | No                                                             |
+| Containers in launcher pod | compute + volumecontainerdisk sidecar          | compute only                                                   |
+| Live migration             | Block migration (must copy entire disk)        | Shared storage migration (if RWX access mode)                  |
+| How the disk gets there    | Pulled as an OCI image by kubelet              | Imported by CDI, uploaded via virtctl, or manually provisioned |
 
 ## Pod spec differences
 
