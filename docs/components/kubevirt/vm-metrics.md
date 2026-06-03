@@ -38,11 +38,24 @@ KubeVirt collects VM-level stats from inside the virtualization layer:
 
 3. The stats are exposed as **Prometheus metrics** which the monitoring stack scrapes. The OpenShift console dashboard reads these metrics for the VM overview graphs.
 
+## Prometheus integration
+
+KubeVirt creates two resources in the monitoring namespace (not the kubevirt namespace):
+
+- **ServiceMonitor** (`prometheus-kubevirt-rules` in `openshift-monitoring`): tells Prometheus to scrape KubeVirt's metrics endpoints over HTTPS
+- **PrometheusRule** (`prometheus-kubevirt-rules` in `kubevirt`): alerting rules for VM-related conditions
+
+These are only created if the ServiceMonitor CRD exists and the `prometheus-k8s` ServiceAccount is found in `openshift-monitoring` when the virt-operator generates its install strategy. The operator checks `getMonitorNamespace()` which looks for the SA in a list of well-known namespaces (`openshift-monitoring`, `monitoring`).
+
+If monitoring is installed after KubeVirt, the install strategy ConfigMap won't include ServiceMonitors. The fix is to delete the strategy ConfigMap in the `kubevirt` namespace and restart the virt-operator pods. The operator regenerates the strategy, this time detecting the monitoring resources, and creates the ServiceMonitor.
+
+Source: `pkg/virt-operator/resource/generate/install/strategy.go` (lines 353-368, 520-530)
+
 ## What the console shows
 
 The Virtualization dashboard in the console uses Prometheus queries against KubeVirt's metrics (path 2). These give VM-level granularity: per-vCPU usage, guest memory balloon stats, per-disk IOPS, per-NIC throughput.
 
-Without the monitoring stack (like on CRC without monitoring), the dashboard graphs will be empty even though the VMs are running fine.
+Without the monitoring stack, the dashboard graphs will be empty even though the VMs are running fine.
 
 ## The chain
 
