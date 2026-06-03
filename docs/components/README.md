@@ -8,3 +8,4 @@ Deep dives into each upstream project's containers, codebases, and runtime behav
 | --------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------- |
 | [KubeVirt](kubevirt/) | [kubevirt/kubevirt](https://github.com/kubevirt/kubevirt)                                         | Core VM runtime: operator, API, controller, handler, launcher | Deployed and traced |
 | [CDI](cdi/)           | [kubevirt/containerized-data-importer](https://github.com/kubevirt/containerized-data-importer)   | VM disk lifecycle: import, upload, clone, golden images        | Deployed and traced |
+| [Console Plugin](kubevirt-plugin/) | [kubevirt-ui/kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin)          | Virtualization section in the OpenShift console sidebar        | Deployed            |
