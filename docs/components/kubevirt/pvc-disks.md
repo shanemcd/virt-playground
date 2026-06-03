@@ -14,7 +14,22 @@ When a VM references a PVC as a volume, the PVC is mounted directly into the vir
            "cache":{"direct":true,"no-flush":false}}
 ```
 
-No backing chain, no copy-on-write overlay, no sidecar container. QEMU reads and writes directly to the qcow2 file on the PVC. Writes persist across VM restarts because the PVC outlives the pod.
+No backing chain, no copy-on-write overlay, no sidecar container. QEMU reads and writes directly to the file on the PVC. Writes persist across VM restarts because the PVC outlives the pod.
+
+## Format conversion
+
+CDI converts disk images during import. For Filesystem-mode PVCs (the default on most storage classes), CDI converts the source image to **raw** format regardless of what format was downloaded. Our Fedora 44 qcow2 (471 MiB compressed) became a 5 GiB raw sparse file named `disk.img` (764 MiB actually on disk):
+
+```
+$ qemu-img info /var/run/kubevirt-private/vmi-disks/rootdisk/disk.img
+file format: raw
+virtual size: 5 GiB (5368709120 bytes)
+disk size: 764 MiB
+```
+
+The conversion chain: Fedora qcow2 (compressed, 471 MiB) -> CDI importer downloads via nbdkit -> converts to raw -> writes sparse to PVC as `disk.img` -> QEMU opens it directly with the `file` driver (no format layer needed for raw).
+
+The file is always named `disk.img` on the PVC. The `StorageProfile` for the storage class controls the volume mode and influences whether CDI uses raw (Filesystem mode) or writes directly as a block device (Block mode).
 
 ## Comparison with containerDisks
 
