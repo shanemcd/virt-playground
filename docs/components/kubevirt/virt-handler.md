@@ -18,6 +18,28 @@
 
 virt-handler suppresses socket errors for the first 3 minutes while waiting for a new virt-launcher to initialize. After that, an unreachable socket means the VMI is marked as Failed.
 
+## Host access
+
+virt-handler is the most privileged component in the KubeVirt stack. Every other component (virt-api, virt-controller, virt-launcher) runs with restricted permissions. virt-handler needs root on the node because its job is to bridge the Kubernetes pod abstraction with low-level host operations that the kubelet can't do: bind-mounting files between containers, creating TAP devices in pod network namespaces, and registering device plugins.
+
+**Security context:**
+- `privileged: true`: full access to host devices, can mount filesystems, bypasses all Linux capability restrictions
+- `hostPID: true`: sees all processes on the host via `/proc`. This is how it reaches into other containers' overlay filesystems via `/proc/1/root/var/lib/containers/storage/overlay/...`
+- `seLinuxOptions.level: s0`: runs at the base SELinux sensitivity level
+
+**Host filesystem mounts:**
+
+| Mount | Host path | Propagation | Why |
+|-------|-----------|-------------|-----|
+| `kubelet-pods` | `/var/lib/kubelet/pods` | None | Direct access to every pod's volumes on the node |
+| `kubelet` | `/var/lib/kubelet` | Bidirectional | Mounts virt-handler creates are visible to the host and vice versa |
+| `virt-share-dir` | `/var/run/kubevirt` | Bidirectional | Shared directory between virt-handler and virt-launcher pods (sockets, disks, hotplug) |
+| `virt-private-dir` | `/var/run/kubevirt-private` | None | Private runtime state |
+| `libvirt-runtimes` | `/var/run/kubevirt-libvirt-runtimes` | None | Libvirt runtime binaries |
+| `node-labeller` | `/var/lib/kubevirt-node-labeller` | None | Node capability labels |
+
+The bidirectional mount propagation on `/var/lib/kubelet` and `/var/run/kubevirt` is what makes container disk bind-mounts and hotplug volumes work. When virt-handler bind-mounts a disk image, that mount propagates to the host and into the virt-launcher pod.
+
 ## VM sync flow
 
 When virt-handler detects a new VMI on its node (`pkg/virt-handler/vm.go`), the `sync()` method dispatches to `processVmUpdate()`:
