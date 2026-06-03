@@ -43,11 +43,15 @@ So the flow is: pod gets scheduled -> virt-controller labels the VMI with the no
 
 When a VM with a containerDisk volume is created, `RenderLaunchManifest()` generates a pod with extra containers for each containerDisk. Four things happen:
 
-### 1. Init container extracts the image
+### 1. virt-controller generates the pod spec
 
-An init container named `volumecontainerdisk-init` runs the containerDisk image with the `container-disk` binary and `--no-op`. This pulls the image and immediately exits. Its purpose is to ensure the image layers are present on the node before the pod starts.
+The user's VM manifest just says `containerDisk: image: quay.io/kubevirt/cirros-container-disk-demo:latest`. virt-controller's `RenderLaunchManifest()` translates that into the full pod spec: init containers, sidecar containers, volume mounts, and the `container-disk` binary. None of this is in the user's YAML. The functions `GenerateInitContainers()` and `GenerateContainers()` in `pkg/container-disk/container-disk.go` build these container specs.
 
-### 2. Sidecar container keeps the filesystem alive
+### 2. Init container forces the image pull
+
+An init container named `volumecontainerdisk-init` runs the containerDisk image with the `container-disk` binary and `--no-op`, which calls `exit(0)` immediately (line 133 of `main.c`). It doesn't extract or copy anything. The only reason it exists is to force the kubelet to pull the OCI image before the pod's main containers start, ensuring the image layers are on disk.
+
+### 3. Sidecar container keeps the filesystem alive
 
 A sidecar container named `volumecontainerdisk` runs the same image with `container-disk --copy-path /var/run/kubevirt-ephemeral-disks/container-disk-data/<uid>/disk_0`. This process:
 
@@ -58,7 +62,7 @@ A sidecar container named `volumecontainerdisk` runs the same image with `contai
 
 The `container-disk` binary is written in C (`cmd/container-disk-v2alpha/main.c`), not Go. It's 183 lines. All it does is create a socket and keep the container alive.
 
-### 3. virt-handler bind-mounts the disk
+### 4. virt-handler bind-mounts the disk
 
 virt-handler on the node bind-mounts the disk file from the sidecar's overlay filesystem into the virt-launcher pod's shared `container-disks` volume:
 
@@ -71,7 +75,7 @@ The path goes through `/proc/1/root` (the node's root namespace) to reach into t
 
 Source: `pkg/virt-handler/mount.go`
 
-### 4. QEMU uses copy-on-write
+### 5. QEMU uses copy-on-write
 
 QEMU opens the bind-mounted disk as a **read-only backing file** and creates a qcow2 overlay for writes:
 
