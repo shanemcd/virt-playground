@@ -31,3 +31,10 @@ End-to-end lab: install OpenShift Virtualization on CRC, set up a nested ESXi ho
 - [02 - Create a VM on OCP Virt](labs/crc-esxi-mtv/02-create-vm-on-ocp-virt.md) - Create a Fedora VM with SSH keys, explore the three-object model and virt-launcher internals
 - [03 - Nested ESXi Setup](labs/crc-esxi-mtv/03-nested-esxi-setup.md) - Run ESXi 8.0U3e as a KVM guest, create a Fedora Cloud VM with cloud-init
 - [04 - Migrate VM with MTV](labs/crc-esxi-mtv/04-migrate-vm-with-mtv.md) - End-to-end migration from ESXi to OpenShift Virtualization using MTV and VDDK
+
+#### CRC + oVirt + MTV
+
+- [01 - Install oVirt Engine](labs/crc-ovirt-mtv/01-install-ovirt-engine.md) - Create a CentOS Stream 9 VM, install oVirt engine and host packages
+- [02 - Configure oVirt](labs/crc-ovirt-mtv/02-configure-ovirt.md) - Add the host, set up local storage, Keycloak API authentication
+- [03 - Create a VM on oVirt](labs/crc-ovirt-mtv/03-create-vm-on-ovirt.md) - Upload a Fedora Cloud image and create a VM via the REST API
+- [04 - Migrate VM with MTV](labs/crc-ovirt-mtv/04-migrate-vm-with-mtv.md) - Add oVirt as an MTV source provider and migrate the VM to OCP Virt
