@@ -25,13 +25,35 @@ virt-launcher runs a gRPC server (`pkg/virt-launcher/virtwrap/cmd-server/server.
 2. **Convert**: `converter.Convert_v1_VirtualMachineInstance_To_api_Domain()` transforms the VMI spec into libvirt domain XML (`pkg/virt-launcher/virtwrap/converter/`)
 3. **Define**: `lookupOrCreateVirDomain()` calls `virConn.DefineDomain()` to register the domain with virtqemud
 4. **Pre-start hook**: sets up disks, network devices, allocates hotplug ports
-5. **Start**: `startDomain()` calls `dom.CreateWithFlags()` to launch QEMU
+5. **Start**: `startDomain()` calls `dom.CreateWithFlags()`, which tells virtqemud to start the domain
 
 The domain manager is at `pkg/virt-launcher/virtwrap/manager.go`, with the core function `SyncVMI()` (~line 1328).
 
-## QEMU command line
+## KubeVirt does not generate QEMU command lines
 
-The converter translates the VMI spec into QEMU flags. For a simple containerDisk VM with 128Mi RAM:
+KubeVirt never constructs QEMU flags. The converter produces libvirt domain XML, which is a declarative description of the VM: what disks it has, what network interfaces, how much memory, etc. For example, the containerDisk in our cirros VM becomes this XML:
+
+```xml
+<disk type='file' device='disk' model='virtio-non-transitional'>
+  <driver name='qemu' type='qcow2' cache='none' error_policy='stop' discard='unmap'/>
+  <source file='/var/run/kubevirt-ephemeral-disks/disk-data/containerdisk/disk.qcow2'/>
+  <backingStore type='file'>
+    <format type='qcow2'/>
+    <source file='/var/run/kubevirt/container-disks/disk_0.img'/>
+    <backingStore/>
+  </backingStore>
+  <target dev='vda' bus='virtio'/>
+  <alias name='ua-containerdisk'/>
+</disk>
+```
+
+virtqemud reads this XML and generates the actual QEMU command line: the four `-blockdev` entries (two protocol layers, two format layers for the backing chain), the `-device` for virtio-blk, `bootindex=1` (libvirt's default for the first hard disk), cache/discard flags, and everything else. virtqemud then forks the `qemu-kvm` process with those flags. QEMU is a child process of virtqemud.
+
+This separation matters because libvirt handles QEMU version differences, flag deprecations, and platform-specific behavior. KubeVirt describes intent in XML. libvirt figures out how to express that intent to the specific QEMU binary installed in the container.
+
+## What the QEMU command line looks like
+
+For a simple containerDisk VM with 128Mi RAM, virtqemud generates flags including:
 
 - **Machine type**: `pc-q35-rhel9.8.0` (Q35 chipset, PCIe)
 - **CPU**: host model passthrough, 1 vCPU with max 4 sockets for hotplug
