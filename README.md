@@ -10,7 +10,7 @@ This repo documents how the full virtualization stack works, from hardware-assis
 
 - [The Full Stack](docs/architecture.md) - Bottom-up walkthrough of the entire virtualization stack: hardware, KVM, QEMU, libvirt, virtio, KubeVirt, and OpenShift Virtualization
 - [VM Lifecycle and Isolation](docs/vm-lifecycle-and-isolation.md) - How a VM starts at the KVM API level, how the host manages the QEMU process, and how four layers of isolation keep the guest contained
-- [Component Deep Dive](docs/components.md) - KubeVirt's runtime components and how they interact
+- [Components](docs/components/) - KubeVirt's runtime components end to end: operator, api, controller, handler, launcher
 - [Networking](docs/networking.md) - How VMs get network connectivity: pod network bindings, Multus, SR-IOV
 - [Storage](docs/storage.md) - VM disk management: PVCs, DataVolumes, CDI, containerDisks
 - [Live Migration](docs/live-migration.md) - How live migration works, from QEMU's pre-copy algorithm through KubeVirt's orchestration
