@@ -175,5 +175,6 @@ Start with **virt-operator** to understand how the stack bootstraps and upgrades
 
 - [Container Disks](container-disks.md) - How KubeVirt boots VMs from container images (OCI as disk distribution)
 - [PVC Disks](pvc-disks.md) - Persistent disks via PVCs: direct read-write, no backing chain
+- [VM Metrics](vm-metrics.md) - How CPU/memory/disk/network stats flow from QEMU to the console dashboard
 - [VMI Phases](vmi-phases.md) - The state machine a VirtualMachineInstance moves through
 - [Client Tools](client-tools.md) - virtctl vs oc: what each can do and why
