@@ -17,15 +17,29 @@ PID 1: virt-launcher-monitor
 
 PID 1 is actually `virt-launcher-monitor`, not virt-launcher itself. The monitor supervises the launcher, watches the QEMU process, and handles graceful shutdown. virt-launcher (PID 8) manages virtqemud, virtlogd, and the gRPC cmd-server.
 
+## virtqemud
+
+virtqemud is a libvirt daemon that runs inside the compute container as a child process of virt-launcher. It is the QEMU-specific modular daemon from the libvirt project (as opposed to the older monolithic `libvirtd` that handled every hypervisor type). Each virt-launcher pod runs its own instance. There is no shared daemon on the node.
+
+What virtqemud does:
+- Accepts domain definitions via the libvirt API over a local Unix socket
+- Translates domain XML into QEMU command line flags
+- Forks and manages the `qemu-kvm` process
+- Maintains a QMP (QEMU Monitor Protocol) connection to the running QEMU for runtime operations: hotplug, migration, pause, screenshots, memory dump
+- Reports lifecycle events back to the API caller (virt-launcher)
+
+The virtqemud binary is baked into the `quay.io/kubevirt/virt-launcher` image. It is not part of the KubeVirt codebase. It comes from the libvirt project.
+
 ## gRPC cmd-server
 
 virt-launcher runs a gRPC server (`pkg/virt-launcher/virtwrap/cmd-server/server.go`) that receives commands from virt-handler. When `SyncVirtualMachine` is called:
 
 1. **Deserialize**: extracts the VMI spec from the protobuf request
-2. **Convert**: `converter.Convert_v1_VirtualMachineInstance_To_api_Domain()` transforms the VMI spec into libvirt domain XML (`pkg/virt-launcher/virtwrap/converter/`)
-3. **Define**: `lookupOrCreateVirDomain()` calls `virConn.DefineDomain()` to register the domain with virtqemud
-4. **Pre-start hook**: sets up disks, network devices, allocates hotplug ports
-5. **Start**: `startDomain()` calls `dom.CreateWithFlags()`, which tells virtqemud to start the domain
+2. **Convert**: `converter.Convert_v1_VirtualMachineInstance_To_api_Domain()` transforms the VMI spec into a Go struct representing libvirt domain XML (`pkg/virt-launcher/virtwrap/converter/`)
+3. **Hooks**: `SetDomainSpecStrWithHooks()` gives hook sidecars a chance to modify the domain spec, then serializes the Go struct to an XML string
+4. **Define**: `DomainDefineXML(xml)` sends the XML string to virtqemud over a local Unix socket. No file is written to disk. virtqemud holds the definition in memory.
+5. **Pre-start hook**: sets up disks, network devices, allocates hotplug ports
+6. **Start**: `dom.CreateWithFlags()` tells virtqemud to start the domain. virtqemud reads the in-memory definition, generates the QEMU command line, and forks the `qemu-kvm` process.
 
 The domain manager is at `pkg/virt-launcher/virtwrap/manager.go`, with the core function `SyncVMI()` (~line 1328).
 
@@ -69,9 +83,14 @@ For a simple containerDisk VM with 128Mi RAM, virtqemud generates flags includin
 - **Sandbox**: QEMU seccomp sandbox enabled, privilege escalation denied
 - **Balloon**: `virtio-balloon-pci-non-transitional` with free-page-reporting
 
-## Why virtqemud instead of libvirtd
+## Security context
 
-Modern KubeVirt uses `virtqemud`, the QEMU-specific modular daemon from the libvirt project, rather than the monolithic `libvirtd`. This reduces attack surface and resource footprint. Each pod has its own instance; there is no shared node-wide daemon.
+virt-launcher runs with restricted permissions, in contrast to virt-handler's privileged access:
+
+- Runs as UID/GID 107 (qemu), non-root
+- `allowPrivilegeEscalation: false`
+- Drops ALL capabilities except `NET_BIND_SERVICE`
+- QEMU runs under its own seccomp sandbox (`-sandbox on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny`)
 
 ## Hook sidecars
 
