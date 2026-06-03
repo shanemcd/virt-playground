@@ -77,14 +77,45 @@ Source: `pkg/virt-handler/mount.go`
 
 ### 5. QEMU uses copy-on-write
 
-QEMU opens the bind-mounted disk as a **read-only backing file** and creates a qcow2 overlay for writes:
+QEMU opens the bind-mounted disk as a read-only backing file and creates a qcow2 overlay for writes. The command line uses four `-blockdev` entries that chain together:
 
 ```
-Read-only base:  /var/run/kubevirt/container-disks/disk_0.img
-Read-write overlay: /var/run/kubevirt-ephemeral-disks/disk-data/containerdisk/disk.qcow2
+-blockdev {"driver":"file",
+           "filename":"/var/run/kubevirt/container-disks/disk_0.img",
+           "node-name":"libvirt-3-storage",
+           "auto-read-only":true}
+
+-blockdev {"node-name":"libvirt-3-format",
+           "read-only":true,
+           "driver":"qcow2",
+           "file":"libvirt-3-storage",
+           "backing":null}
+
+-blockdev {"driver":"file",
+           "filename":"/var/run/kubevirt-ephemeral-disks/disk-data/containerdisk/disk.qcow2",
+           "node-name":"libvirt-2-storage"}
+
+-blockdev {"node-name":"libvirt-2-format",
+           "read-only":false,
+           "driver":"qcow2",
+           "file":"libvirt-2-storage",
+           "backing":"libvirt-3-format"}
+
+-device   {"driver":"virtio-blk-pci-non-transitional",
+           "drive":"libvirt-2-format",
+           "id":"ua-containerdisk",
+           "bootindex":1}
 ```
 
-The QEMU command line shows this as two `blockdev` entries chained together, with the overlay's `backing` field pointing to the base. This is standard qcow2 copy-on-write.
+Two layers, chained:
+
+1. **`disk_0.img`** (12.1 MiB on disk, 44 MiB virtual, qcow2, read-only): the cirros image bind-mounted from the sidecar container. The `Jan 1 1970` timestamp comes from the `FROM scratch` container build.
+
+2. **`disk.qcow2`** (read-write, in emptyDir): the ephemeral overlay. All guest writes land here. This is what gets lost on restart.
+
+QEMU presents the overlay to the VM as a single virtio-blk device. The guest sees one 44 MiB disk. Reads hit the base image unless the overlay has written that block. Writes always go to the overlay. Standard qcow2 copy-on-write.
+
+The overlay is created by `CreateEphemeralImages()` in `pkg/container-disk/container-disk.go`, which calls `qemu-img create` with the base image as the backing file.
 
 Source: `pkg/container-disk/container-disk.go` (`CreateEphemeralImages`)
 
