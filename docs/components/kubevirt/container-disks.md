@@ -1,0 +1,90 @@
+# Container Disks
+
+How KubeVirt boots VMs from container images, and why it works.
+
+## The idea
+
+Container registries solve a hard distribution problem: authentication, caching, versioning, layer deduplication, cross-node distribution. Every Kubernetes cluster already knows how to pull OCI images. Instead of building a separate disk image distribution system, KubeVirt reuses the one that already exists.
+
+A containerDisk is an OCI image with a disk file inside it. You reference it in a VM spec the same way you'd reference a container image anywhere else. The kubelet handles pulling, caching, and garbage collection.
+
+## Building one
+
+A containerDisk image is trivial to build:
+
+```dockerfile
+FROM scratch
+ADD fedora.qcow2 /disk/
+```
+
+No entrypoint, no runtime dependencies. The "container" never executes application code. The OCI image format is just a packaging and distribution mechanism for a disk file. Both qcow2 and raw formats are supported.
+
+Source: `cmd/container-disk-v2alpha/README.md`
+
+## How it works at runtime
+
+When a VM with a containerDisk volume is created, `RenderLaunchManifest()` generates a pod with extra containers for each containerDisk. Three things happen:
+
+### 1. Init container extracts the image
+
+An init container named `volumecontainerdisk-init` runs the containerDisk image with the `container-disk` binary and `--no-op`. This pulls the image and immediately exits. Its purpose is to ensure the image layers are present on the node before the pod starts.
+
+### 2. Sidecar container keeps the filesystem alive
+
+A sidecar container named `volumecontainerdisk` runs the same image with `container-disk --copy-path /var/run/kubevirt-ephemeral-disks/container-disk-data/<uid>/disk_0`. This process:
+
+- Creates a Unix socket at the copy path + `.sock`
+- Loops forever, accepting and closing connections on the socket
+- The socket's existence signals to virt-handler that the disk is ready
+- The container stays running so its overlay filesystem remains accessible
+
+The `container-disk` binary is written in C (`cmd/container-disk-v2alpha/main.c`), not Go. It's 183 lines. All it does is create a socket and keep the container alive.
+
+### 3. virt-handler bind-mounts the disk
+
+virt-handler on the node bind-mounts the disk file from the sidecar's overlay filesystem into the virt-launcher pod's shared `container-disks` volume:
+
+```
+Source: /proc/1/root/var/lib/containers/storage/overlay/<layer-id>/merged/disk/<image-file>
+Target: /var/lib/kubelet/pods/<pod-uid>/volumes/kubernetes.io~empty-dir/container-disks/disk_0.img
+```
+
+The path goes through `/proc/1/root` (the node's root namespace) to reach into the container's storage overlay.
+
+Source: `pkg/virt-handler/mount.go`
+
+### 4. QEMU uses copy-on-write
+
+QEMU opens the bind-mounted disk as a **read-only backing file** and creates a qcow2 overlay for writes:
+
+```
+Read-only base:  /var/run/kubevirt/container-disks/disk_0.img
+Read-write overlay: /var/run/kubevirt-ephemeral-disks/disk-data/containerdisk/disk.qcow2
+```
+
+The QEMU command line shows this as two `blockdev` entries chained together, with the overlay's `backing` field pointing to the base. This is standard qcow2 copy-on-write.
+
+Source: `pkg/container-disk/container-disk.go` (`CreateEphemeralImages`)
+
+## Limitations
+
+- **Ephemeral only**: the qcow2 overlay lives in an emptyDir. When the pod dies, all writes are lost. Every restart boots from the original image.
+- **Size**: the disk image is stored in the container's overlay filesystem, which consumes node disk space. Large images (tens of GB) are impractical.
+- **No persistence**: if you need a VM's disk to survive restarts, use a PVC (with or without CDI).
+- **Block migration required**: since the disk is node-local, live migration requires copying the entire disk to the target node (block migration), not just memory state.
+
+## When to use them
+
+- Testing and development (quick iteration, no storage setup needed)
+- Stateless workloads (the VM's persistent state lives elsewhere)
+- CI/CD environments (disposable VMs)
+- Distributing read-only base images (boot from containerDisk, persist data to a separate PVC)
+
+## Key code paths
+
+| File | What it does |
+|------|-------------|
+| `cmd/container-disk-v2alpha/main.c` | The C binary that runs in the sidecar (183 lines) |
+| `pkg/container-disk/container-disk.go` | Path calculation, container generation, ephemeral image creation |
+| `pkg/virt-handler/mount.go` | Bind-mounting disk from sidecar overlay into launcher |
+| `pkg/virt-controller/services/template.go` | Generates init + sidecar containers in the pod spec |
