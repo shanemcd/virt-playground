@@ -21,9 +21,27 @@ No entrypoint, no runtime dependencies. The "container" never executes applicati
 
 Source: `cmd/container-disk-v2alpha/README.md`
 
+## How the pieces connect
+
+The kubelet doesn't hand anything off to KubeVirt. virt-handler never watches pods at all for this purpose. The connection works through the VMI object, not the pod.
+
+Here's the chain:
+
+1. **virt-controller** creates the virt-launcher pod (via `RenderLaunchManifest`) with an `ownerReference` pointing back to the `VirtualMachineInstance`. The pod gets labels like `kubevirt.io: virt-launcher` and `kubevirt.io/vm: vm-cirros`, but these labels are not how virt-handler finds it.
+
+2. **kubelet** schedules and starts the pod normally. kubelet has no idea this pod is related to virtualization. It pulls the containerDisk image, starts the sidecar, runs init containers. Standard Kubernetes.
+
+3. **virt-controller** watches the pod's status. Once the pod is scheduled to a node, virt-controller updates the VMI object: sets `status.phase = Scheduled`, `status.nodeName = <node>`, and adds the label `kubevirt.io/nodeName: <node>` (`pkg/virt-controller/watch/vmi/lifecycle.go:441`).
+
+4. **virt-handler** watches VMI objects, filtered by a label selector: `kubevirt.io/nodeName in (<this-host>)` (`pkg/controller/virtinformers.go:479`). When the VMI gets that label, virt-handler's informer fires and it starts processing the VMI.
+
+5. **virt-handler** looks up the pod UID from `vmi.Status.ActivePods`, uses it to locate the pod's volumes on the node filesystem, and proceeds with disk mounting and gRPC calls.
+
+So the flow is: pod gets scheduled -> virt-controller labels the VMI with the node name -> virt-handler's filtered watch picks up the VMI -> virt-handler acts on the pod's filesystem. The kubelet and virt-handler never communicate directly. The VMI object is the coordination point.
+
 ## How it works at runtime
 
-When a VM with a containerDisk volume is created, `RenderLaunchManifest()` generates a pod with extra containers for each containerDisk. Three things happen:
+When a VM with a containerDisk volume is created, `RenderLaunchManifest()` generates a pod with extra containers for each containerDisk. Four things happen:
 
 ### 1. Init container extracts the image
 
