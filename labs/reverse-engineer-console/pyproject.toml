@@ -1,0 +1,19 @@
+[project]
+name = "kubevirt-console-client"
+version = "0.1.0"
+description = "Reverse-engineered console clients for KubeVirt VMs"
+requires-python = ">=3.11"
+dependencies = [
+    "websockets>=12.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+console-client = "console_client:main"
+vnc-proxy = "vnc_proxy:main"
+
+[tool.setuptools]
+py-modules = ["console_client", "vnc_proxy"]
+
+[tool.uv]
+package = true
