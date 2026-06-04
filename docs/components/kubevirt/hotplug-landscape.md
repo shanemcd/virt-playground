@@ -187,6 +187,45 @@ volumes:
     hotpluggable: true  # Required
 ```
 
+## Downstream (CNV) Issue Tracker
+
+The downstream Jira project is **CNV** at [issues.redhat.com/projects/CNV](https://issues.redhat.com/projects/CNV). As of June 2026, there are 30+ open hotplug bugs. The patterns below are grouped by theme.
+
+### Hotplug + Live Migration (Biggest Problem Area)
+
+Migration and hotplug interact badly. This is the most active area of bugs:
+
+- [CNV-88758](https://issues.redhat.com/browse/CNV-88758) - VM with hotplug migration sometimes fails
+- [CNV-87820](https://issues.redhat.com/browse/CNV-87820) - Migration with filesystem hotplug volumes fails most of the time with k8s 1.36
+- [CNV-84384](https://issues.redhat.com/browse/CNV-84384) - Storage migration stuck in Pending due to ClaimMisbound on hotplugged volumes (Critical)
+- [CNV-79407](https://issues.redhat.com/browse/CNV-79407) - Live migration failed for hotplug VM, "dirty virt-launcher shutdown: exit-code 2"
+- [CNV-80163](https://issues.redhat.com/browse/CNV-80163) - Repeated recreation of hp-volume pods (the livelock issue from upstream [#16937](https://github.com/kubevirt/kubevirt/issues/16937))
+
+### Snapshots and Cloning Don't Preserve Hotplugged State
+
+Hotplugged resources are not correctly captured when snapshotting or cloning a VM:
+
+- [CNV-84512](https://issues.redhat.com/browse/CNV-84512) - VMSnapshot after CPU/memory hotplug restores OLD values (not the hotplugged ones)
+- [CNV-84135](https://issues.redhat.com/browse/CNV-84135) - VM clone doesn't preserve hotplugged CPU/memory values
+
+This means: if you hotplug CPU from 4 to 8, take a snapshot, and restore it, you get 4 CPUs back. The hotplugged state is lost.
+
+### Windows-Specific Issues
+
+Windows guests have unique hotplug problems:
+
+- [CNV-83327](https://issues.redhat.com/browse/CNV-83327) - Windows disks go offline after reboot following upgrade to 4.20 (Critical)
+- [CNV-82176](https://issues.redhat.com/browse/CNV-82176) - Windows 2019 VMs can't start with >=256GB memory (Critical)
+
+### Volume Hotplug
+
+- [CNV-87248](https://issues.redhat.com/browse/CNV-87248) - Bulk disk hotplug silently drops volumes at 255 disks
+- [CNV-83293](https://issues.redhat.com/browse/CNV-83293) - VM fails to start when deleted disk legacy isn't cleaned up
+
+### CPU/Memory Hotplug
+
+- [CNV-76448](https://issues.redhat.com/browse/CNV-76448) - "Auto" vCPU placement needed for best NUMA alignment (Critical)
+
 ## Testing Hotplug
 
 Test categories in the KubeVirt repo:
@@ -198,20 +237,28 @@ Test categories in the KubeVirt repo:
 - `tests/network/hotplug_bridge.go` - Bridge interface hotplug
 - `tests/network/hotplug_sriov.go` - SR-IOV interface hotplug
 
-## What Your Boss Probably Cares About
+## Summary
 
 **Volume Hotplug:**
 - Works, but has race conditions under rapid changes (fix in progress)
 - Node affinity is broken (no ETA on fix)
 - Incompatible with GPU passthrough and macvtap
+- Silently drops volumes past 255 disks
+- Migration with hotplugged volumes is the most failure-prone combination
 
 **CPU/Memory Hotplug:**
 - Solid for adding resources
 - Memory shrinking is technically possible but risky
 - Gated by VMRolloutStrategy (good for compliance/stability)
+- Snapshots and clones don't preserve hotplugged values
 
 **Network Hotplug:**
 - Works but bypasses VMRolloutStrategy (inconsistency issue)
 - SR-IOV + live migration behavior unclear
+- Clone doesn't preserve hotplugged NICs
 
-**Biggest Gotcha**: Hotplug is not "set it and forget it." You need to understand the limitations, especially around node affinity, rapid changes, and the VMRolloutStrategy inconsistency.
+**Windows:**
+- Memory hotplug has hard limits (>=256GB fails on Win2019)
+- Disks can go offline after reboot post-upgrade
+
+**Biggest Gotcha**: Hotplug is not "set it and forget it." The interaction between hotplug and other operations (migration, snapshot, clone, upgrade) is where most of the bugs live.
