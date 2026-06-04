@@ -23,6 +23,12 @@ This repo documents how the full virtualization stack works, from hardware-assis
 
 ### Labs
 
+#### Reverse Engineering Console Access
+
+Minimal Python clients that connect directly to VM console endpoints, demonstrating the WebSocket protocol:
+
+- [Reverse Engineer Console](labs/reverse-engineer-console/) - Build custom serial console and VNC proxy clients from scratch
+
 #### CRC + ESXi + MTV
 
 End-to-end lab: install OpenShift Virtualization on CRC, set up a nested ESXi host, and migrate a VM using MTV.
