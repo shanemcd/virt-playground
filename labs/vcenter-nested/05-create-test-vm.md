@@ -56,11 +56,9 @@ govc device.boot -vm fedora-01 -order cdrom,disk
 
 ### Why Fedora Server and not Fedora Cloud?
 
-The Fedora Cloud image is built for KVM/virtio. It lacks SCSI drivers (LSI Logic, PVSCSI) in its initramfs, so it can't boot on a VM with a SCSI disk controller.
+The Fedora Cloud image is built for KVM/virtio. It lacks SCSI drivers (LSI Logic, PVSCSI) in its initramfs, so it can't boot on a VM with a SCSI disk controller. It requires SATA or IDE controllers on ESXi.
 
-VDDK-based migration requires SCSI controllers. ESXi does not create delta VMDKs when snapshotting SATA-attached disks on powered-off VMs, and VDDK needs those delta disks to transfer data. This is a [documented VMware limitation](https://github.com/openshift/openshift-docs/blob/enterprise-4.21/modules/virt-importing-vm-wizard.adoc#L20): "Virtual disks must be connected to IDE or SCSI controllers."
-
-The Fedora Server installer loads LSI Logic drivers during installation, so the resulting system boots fine on SCSI.
+The Fedora Server installer loads LSI Logic drivers during installation, so the resulting system boots fine on SCSI. Using SCSI controllers is VMware best practice for performance.
 
 ### Why `other4xLinux64Guest`?
 

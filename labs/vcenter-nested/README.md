@@ -46,5 +46,3 @@ Linux workstation (KVM)
 **The CLI deployer's ovftool needs legacy libraries.** On Fedora 43/44, install `libnsl` and `libxcrypt-compat` (in a toolbox if you're on an atomic desktop) before running the installer.
 
 **ESXi SSL thumbprint prompt blocks non-interactive deploys.** Add the thumbprint to the deploy JSON to avoid the interactive prompt.
-
-**VDDK migration requires SCSI disk controllers.** ESXi does not create delta VMDKs when snapshotting SATA-attached disks on powered-off VMs. VDDK needs delta disks to transfer data. If you create a VM with a SATA controller (common when using KVM-targeted cloud images that lack SCSI drivers), VDDK will fail with "disk not found" / error 13. Use LSI Logic or PVSCSI for VMs you plan to migrate.

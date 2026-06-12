@@ -218,7 +218,7 @@ Log in at the ESXi web console with `fedora` / `fedora`.
 
 - **ESXi free edition has API restrictions baked into the binary**, not just the license config. You cannot put the free ISO into evaluation mode.
 - **vmkfstools** is required to convert uploaded VMDKs to native ESXi format. The streamOptimized VMDK from `qemu-img convert` is an import format, not a runtime format.
-- **Fedora Cloud images need SATA or IDE controllers on ESXi**. The initramfs doesn't include PVSCSI or LSI Logic drivers. It will get stuck in dracut's initqueue trying to find the root filesystem.
+- **Fedora Cloud images need SATA or IDE controllers on ESXi**. The initramfs doesn't include PVSCSI or LSI Logic drivers. It will get stuck in dracut's initqueue trying to find the root filesystem. MTV migrations work fine with SATA controllers (both cold and warm).
 - **Cloud-init user-data formatting matters**: when using a `users` block, credentials must be inside the user definition (`plain_text_passwd`, `lock_passwd: false`), not at the top level.
 - **ESXi SSH authorized_keys** live at `/etc/ssh/keys-<username>/authorized_keys`, not the standard `~/.ssh/authorized_keys`.
 - **VMFS file locks** can become stale and survive reboots. The fix is to clone the disk with `vmkfstools -i` to a new file, or destroy and recreate.
