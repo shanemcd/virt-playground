@@ -49,3 +49,7 @@ The plugin pod runs as a standard unprivileged nginx container. No host access, 
 In the productized stack (OpenShift Virtualization), HCO deploys this plugin automatically. With upstream KubeVirt, it's a separate manual install. The plugin lives in the `kubevirt-ui` GitHub org, not under `kubevirt` or `openshift`.
 
 The Forklift console plugin (`kubev2v/forklift-console-plugin`) is a separate plugin that adds the Migration section. It follows the same pattern but comes from a different repo and adds different pages.
+
+## MicroShift / no ConsolePlugin CRD
+
+MicroShift has no `ConsolePlugin` CRD and no console operator. Loading this plugin there requires `BRIDGE_PLUGINS=...` on an off-cluster console Deployment, plus JS bundle patches for module-federation semver and the `KUBEVIRT_VIRTUALIZATION_NAV` flag. See [labs/crc-microshift-virt](../../../labs/crc-microshift-virt/).

@@ -53,3 +53,13 @@ Build and deploy a KubeVirt NodeHook plugin using the VEP-190 framework. Covers 
 - [02 - Configure oVirt](labs/crc-ovirt-mtv/02-configure-ovirt.md) - Add the host, set up local storage, Keycloak API authentication
 - [03 - Create a VM on oVirt](labs/crc-ovirt-mtv/03-create-vm-on-ovirt.md) - Upload a Fedora Cloud image and create a VM via the REST API
 - [04 - Migrate VM with MTV](labs/crc-ovirt-mtv/04-migrate-vm-with-mtv.md) - Add oVirt as an MTV source provider and migrate the VM to OCP Virt
+
+#### CRC MicroShift + KubeVirt Console
+
+Stand up community HCO on CRC's MicroShift preset and force the Virtualization console UI (plugin patches, API stubs, Tailscale). Not a supported CNV path — prefer the `openshift` preset for product console.
+
+- [01 - Start CRC MicroShift](labs/crc-microshift-virt/01-start-crc-microshift.md) - Size the VM, free host `:443`, start MicroShift
+- [02 - OLM and KubeVirt](labs/crc-microshift-virt/02-olm-and-kubevirt.md) - Upstream OLM, OperatorHub.io, cert-manager, Multus, community HCO
+- [03 - Console and Tailscale](labs/crc-microshift-virt/03-console-and-tailscale.md) - Off-cluster console, Tailscale operator, MagicDNS
+- [04 - KubeVirt console plugin](labs/crc-microshift-virt/04-kubevirt-console-plugin.md) - Deploy plugin, federation + nav-flag patches
+- [05 - Stubs and monitoring](labs/crc-microshift-virt/05-stubs-and-monitoring.md) - Project/Infrastructure CR stubs, Prometheus/Alertmanager stub
