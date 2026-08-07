@@ -38,6 +38,15 @@ End-to-end lab: install OpenShift Virtualization on CRC, set up a nested ESXi ho
 - [03 - Nested ESXi Setup](labs/crc-esxi-mtv/03-nested-esxi-setup.md) - Run ESXi 8.0U3e as a KVM guest, create a Fedora Cloud VM with cloud-init
 - [04 - Migrate VM with MTV](labs/crc-esxi-mtv/04-migrate-vm-with-mtv.md) - End-to-end migration from ESXi to OpenShift Virtualization using MTV and VDDK
 
+#### KubeVirt Plugin Development
+
+Build and deploy a KubeVirt NodeHook plugin using the VEP-190 framework. Covers building upstream KubeVirt from source, deploying to CRC with the Plugins feature gate, writing a gRPC plugin that detects outdated VirtIO drivers, and testing it end-to-end.
+
+- [01 - Build Upstream KubeVirt](labs/kubevirt-plugin-dev/01-build-upstream-kubevirt.md) - Build all KubeVirt images from main with Bazel, push to quay.io
+- [02 - Deploy KubeVirt to CRC](labs/kubevirt-plugin-dev/02-deploy-kubevirt-to-crc.md) - Deploy with the Plugins feature gate enabled, verify Plugin CRD
+- [03 - Write the Plugin](labs/kubevirt-plugin-dev/03-write-the-plugin.md) - NodeHook gRPC plugin that queries guest agent for VirtIO driver versions
+- [04 - Deploy and Test](labs/kubevirt-plugin-dev/04-deploy-and-test.md) - Deploy DaemonSet + Plugin CR, test against a Windows VM
+
 #### CRC + oVirt + MTV
 
 - [01 - Install oVirt Engine](labs/crc-ovirt-mtv/01-install-ovirt-engine.md) - Create a CentOS Stream 9 VM, install oVirt engine and host packages
