@@ -1,12 +1,17 @@
 # Static hostPath volumes on the CRC node.
-# TopoLVM only has ~15Gi free on the rhel VG; the Windows ISO (~7.6Gi) and
-# 40Gi root disk live under /var/home/shanemcd/virt-test-disks (host home, ~376Gi free).
+# TopoLVM only has ~15Gi free on the rhel VG, so this lab uses hostPath for the
+# Windows ISO (~7.6Gi) and 40Gi root disk.
 #
-# Prepare on the node before apply (already done for this cluster):
-#   mkdir -p /var/home/shanemcd/virt-test-disks/{win-iso,win2025-root}
-#   ln <windows-server-2025-eval.iso> /var/home/shanemcd/virt-test-disks/win-iso/disk.img
-#   truncate -s 40G /var/home/shanemcd/virt-test-disks/win2025-root/disk.img
-#   chown -R 107:107 /var/home/shanemcd/virt-test-disks/win2025-root
+# Paths below match the live virt-test fixture on this cluster (ISO was staged
+# from an explicit on-node path; do NOT hard-require CRC shared home/Downloads —
+# see README "Windows ISO source"). Adjust hostPath.path before apply if your
+# STAGE_ROOT differs.
+#
+# Prepare on the node before apply:
+#   mkdir -p $STAGE_ROOT/{win-iso,win2025-root}
+#   ln $WINDOWS_ISO $STAGE_ROOT/win-iso/disk.img   # or noprompt-patched copy
+#   truncate -s 40G $STAGE_ROOT/win2025-root/disk.img
+#   chown -R 107:107 $STAGE_ROOT/win2025-root
 ---
 apiVersion: v1
 kind: PersistentVolume

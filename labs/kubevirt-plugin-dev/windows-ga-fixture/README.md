@@ -12,42 +12,72 @@ and returns VirtIO driver fields.
 
 - `oc` admin against the MicroShift/CRC cluster (`oc whoami`, `oc get nodes`)
 - CDI Deployed (already present via HCO)
-- Windows Server 2025 evaluation ISO on the CRC node (found at
-  `/var/home/shanemcd/Downloads/26100.32230.260111-0550.lt_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso`)
 - VirtIO drivers container disk: `quay.io/shanemcd/virtio-container-disk:dev`
-- Host free space under `/var/home/shanemcd` (TopoLVM VG free space is too small
-  for a 40Gi Windows disk + ISO; this fixture uses static hostPath PVs)
+- A Windows Server 2025 evaluation ISO available by **one** of the paths below
+- Enough disk for a ~40Gi root disk (this cluster’s TopoLVM VG free space is too
+  small; the lab uses static hostPath PVs under a writable node path)
 
-## Apply
+## Windows ISO source (do not assume host Downloads)
+
+CRC may mount the workstation home into the VM via virtiofs
+(`crc config get enable-shared-dirs`, default true → often
+`/var/home/$USER` on the node). **That share is optional and may be disabled.**
+This fixture must not depend on it.
+
+Resolve the ISO in order:
+
+1. **Explicit path or URL from the operator / card notes**  
+   e.g. `WINDOWS_ISO=/path/on/node/...iso` or an `https://…` download URL the
+   sandbox is allowed to fetch. Prefer this.
+2. **CDI upload from a path the agent can read** (sandbox mount, PVC, or a
+   path passed in):  
+   `virtctl image-upload pvc win2025-iso --size=8Gi --image-path="$WINDOWS_ISO"
+   --uploadproxy-url=… --insecure --force-bind -n virt-test`  
+   Then point the VM at that PVC (and use a normal StorageClass/blank DV for
+   the root disk if hostPath is not wanted).
+3. **Opportunistic CRC shared-home discovery only as a last resort**  
+   If `oc debug node/… -- chroot /host` can see a known eval ISO under the
+   shared home, you may stage it onto a hostPath PV for this lab. Document the
+   path you used. Do not treat this as the supported default.
+4. **Escalate** if none of the above yields an ISO path/URL. Stop and ask for
+   either a downloadable URL, a path reachable from the agent/node, or a
+   pre-built Windows disk image. Do not scrape random mirrors or guess license
+   media.
+
+## Apply (hostPath staging when an on-node ISO path is already known)
 
 ```bash
-# Stage disks on the node (once). Prefer a noprompt ISO so UEFI does not sit
-# on "Press any key to boot from CD" (same-size binary replace of efisys.bin
-# with efisys_noprompt.bin inside a copy of the eval ISO).
-oc debug node/api.crc.testing -- chroot /host bash -c '
+# WINDOWS_ISO must already be a readable path *on the node* (not "look in Downloads").
+# Prefer a noprompt ISO so UEFI does not sit on "Press any key to boot from CD"
+# (same-size binary replace of efisys.bin with efisys_noprompt.bin).
+: "${WINDOWS_ISO:?set WINDOWS_ISO to an on-node Windows Server eval ISO path}"
+STAGE_ROOT="${STAGE_ROOT:-/var/mnt/virt-test-disks}"   # pick a writable node path
+
+oc debug node/api.crc.testing -- chroot /host bash -c "
   set -e
-  SRC=/var/home/shanemcd/Downloads/26100.32230.260111-0550.lt_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso
-  mkdir -p /var/home/shanemcd/virt-test-disks/{win-iso,win2025-root} /tmp/winiso
-  mount -o loop,ro "$SRC" /tmp/winiso
+  SRC='$WINDOWS_ISO'
+  STAGE_ROOT='$STAGE_ROOT'
+  mkdir -p \"\$STAGE_ROOT\"/{win-iso,win2025-root} /tmp/winiso
+  mount -o loop,ro \"\$SRC\" /tmp/winiso
   cp /tmp/winiso/efi/microsoft/boot/efisys.bin /tmp/efisys.bin
   cp /tmp/winiso/efi/microsoft/boot/efisys_noprompt.bin /tmp/efisys_noprompt.bin
   umount /tmp/winiso
   python3 - <<PY
 import pathlib, shutil
-src=pathlib.Path("'"$SRC"'")
-out=pathlib.Path("/var/home/shanemcd/virt-test-disks/win2025-noprompt.iso")
+src=pathlib.Path(\"\$SRC\")
+out=pathlib.Path(\"\$STAGE_ROOT/win2025-noprompt.iso\")
 shutil.copy2(src, out)
-old=pathlib.Path("/tmp/efisys.bin").read_bytes()
-new=pathlib.Path("/tmp/efisys_noprompt.bin").read_bytes()
+old=pathlib.Path('/tmp/efisys.bin').read_bytes()
+new=pathlib.Path('/tmp/efisys_noprompt.bin').read_bytes()
 assert len(old)==len(new)
-data=out.read_bytes().replace(old, new)
-out.write_bytes(data)
+out.write_bytes(out.read_bytes().replace(old, new))
 PY
-  ln -f /var/home/shanemcd/virt-test-disks/win2025-noprompt.iso \
-    /var/home/shanemcd/virt-test-disks/win-iso/disk.img
-  truncate -s 40G /var/home/shanemcd/virt-test-disks/win2025-root/disk.img
-  chown -R 107:107 /var/home/shanemcd/virt-test-disks/win2025-root
-'
+  ln -f \"\$STAGE_ROOT/win2025-noprompt.iso\" \"\$STAGE_ROOT/win-iso/disk.img\"
+  truncate -s 40G \"\$STAGE_ROOT/win2025-root/disk.img\"
+  chown -R 107:107 \"\$STAGE_ROOT/win2025-root\"
+"
+
+# Edit 00-storage.yaml hostPath paths to match STAGE_ROOT, then:
 oc apply -f 00-storage.yaml
 oc apply -f 01-sysprep-configmap.yaml
 oc apply -f 02-vm.yaml
