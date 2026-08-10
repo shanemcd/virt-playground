@@ -1,0 +1,153 @@
+# Unattended Windows Server 2025 Datacenter Evaluation install.
+# Root disk uses SATA so setup can see the disk without loading VirtIO storage
+# drivers. VirtIO guest tools (incl. qemu-ga) install at first logon from the
+# virtio container disk CD.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: win2025-sysprep
+  namespace: virt-test
+  labels:
+    app: windows-ga-fixture
+data:
+  Autounattend.xml: |
+    <?xml version="1.0" encoding="utf-8"?>
+    <unattend xmlns="urn:schemas-microsoft-com:unattend">
+      <settings pass="windowsPE">
+        <component name="Microsoft-Windows-International-Core-WinPE"
+                   processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35"
+                   language="neutral" versionScope="nonSxS"
+                   xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <SetupUILanguage>
+            <UILanguage>en-US</UILanguage>
+          </SetupUILanguage>
+          <InputLocale>en-US</InputLocale>
+          <SystemLocale>en-US</SystemLocale>
+          <UILanguage>en-US</UILanguage>
+          <UserLocale>en-US</UserLocale>
+        </component>
+        <component name="Microsoft-Windows-Setup"
+                   processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35"
+                   language="neutral" versionScope="nonSxS"
+                   xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <DiskConfiguration>
+            <Disk wcm:action="add">
+              <DiskID>0</DiskID>
+              <WillWipeDisk>true</WillWipeDisk>
+              <CreatePartitions>
+                <CreatePartition wcm:action="add">
+                  <Order>1</Order>
+                  <Type>EFI</Type>
+                  <Size>100</Size>
+                </CreatePartition>
+                <CreatePartition wcm:action="add">
+                  <Order>2</Order>
+                  <Type>MSR</Type>
+                  <Size>16</Size>
+                </CreatePartition>
+                <CreatePartition wcm:action="add">
+                  <Order>3</Order>
+                  <Type>Primary</Type>
+                  <Extend>true</Extend>
+                </CreatePartition>
+              </CreatePartitions>
+              <ModifyPartitions>
+                <ModifyPartition wcm:action="add">
+                  <Order>1</Order>
+                  <PartitionID>1</PartitionID>
+                  <Label>System</Label>
+                  <Format>FAT32</Format>
+                </ModifyPartition>
+                <ModifyPartition wcm:action="add">
+                  <Order>2</Order>
+                  <PartitionID>2</PartitionID>
+                </ModifyPartition>
+                <ModifyPartition wcm:action="add">
+                  <Order>3</Order>
+                  <PartitionID>3</PartitionID>
+                  <Label>Windows</Label>
+                  <Letter>C</Letter>
+                  <Format>NTFS</Format>
+                </ModifyPartition>
+              </ModifyPartitions>
+            </Disk>
+          </DiskConfiguration>
+          <ImageInstall>
+            <OSImage>
+              <InstallFrom>
+                <MetaData wcm:action="add">
+                  <Key>/IMAGE/NAME</Key>
+                  <Value>Windows Server 2025 SERVERDATACENTER</Value>
+                </MetaData>
+              </InstallFrom>
+              <InstallTo>
+                <DiskID>0</DiskID>
+                <PartitionID>3</PartitionID>
+              </InstallTo>
+            </OSImage>
+          </ImageInstall>
+          <UserData>
+            <AcceptEula>true</AcceptEula>
+            <FullName>VirtTest</FullName>
+            <Organization>KubeVirt</Organization>
+          </UserData>
+        </component>
+      </settings>
+      <settings pass="specialize">
+        <component name="Microsoft-Windows-Shell-Setup"
+                   processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35"
+                   language="neutral" versionScope="nonSxS"
+                   xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <ComputerName>WIN2025</ComputerName>
+          <TimeZone>UTC</TimeZone>
+        </component>
+      </settings>
+      <settings pass="oobeSystem">
+        <component name="Microsoft-Windows-Shell-Setup"
+                   processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35"
+                   language="neutral" versionScope="nonSxS"
+                   xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <AutoLogon>
+            <Password>
+              <Value>VirtTest123!</Value>
+              <PlainText>true</PlainText>
+            </Password>
+            <Enabled>true</Enabled>
+            <LogonCount>3</LogonCount>
+            <Username>Administrator</Username>
+          </AutoLogon>
+          <UserAccounts>
+            <AdministratorPassword>
+              <Value>VirtTest123!</Value>
+              <PlainText>true</PlainText>
+            </AdministratorPassword>
+          </UserAccounts>
+          <OOBE>
+            <HideEULAPage>true</HideEULAPage>
+            <HideLocalAccountScreen>true</HideLocalAccountScreen>
+            <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+            <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+            <NetworkLocation>Work</NetworkLocation>
+            <ProtectYourPC>3</ProtectYourPC>
+            <SkipMachineOOBE>true</SkipMachineOOBE>
+            <SkipUserOOBE>true</SkipUserOOBE>
+          </OOBE>
+          <FirstLogonCommands>
+            <SynchronousCommand wcm:action="add">
+              <Order>1</Order>
+              <Description>Install VirtIO guest tools (drivers + qemu-ga)</Description>
+              <CommandLine>cmd.exe /c "for %d in (D E F G H) do if exist %d:\virtio-win-guest-tools.exe (start /wait %d:\virtio-win-guest-tools.exe /quiet /norestart &amp; goto :done)"</CommandLine>
+            </SynchronousCommand>
+            <SynchronousCommand wcm:action="add">
+              <Order>2</Order>
+              <Description>Ensure QEMU Guest Agent service is running</Description>
+              <CommandLine>cmd.exe /c "sc config QEMU-GA start= auto &amp; net start QEMU-GA"</CommandLine>
+            </SynchronousCommand>
+          </FirstLogonCommands>
+        </component>
+      </settings>
+    </unattend>

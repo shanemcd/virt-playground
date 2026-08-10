@@ -1,0 +1,4 @@
+Ready=True reason= msg=
+LiveMigratable=False reason=DisksNotLiveMigratable msg=cannot migrate VMI: PVC win2025-rootdisk is not shared, live migration requires that all PVCs must be shared (using ReadWriteMany access mode)
+StorageLiveMigratable=True reason= msg=
+AgentConnected=True reason= msg=

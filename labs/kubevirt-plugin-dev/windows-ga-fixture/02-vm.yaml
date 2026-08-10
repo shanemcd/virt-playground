@@ -1,0 +1,96 @@
+# Windows Server 2025 fixture VM for guest-get-devices / VEP-385 validation.
+# Namespace: virt-test
+# VirtIO drivers ISO: quay.io/shanemcd/virtio-container-disk:dev
+# Windows ISO + root disk: hostPath PVCs (see 00-storage.yaml)
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: win2025
+  namespace: virt-test
+  labels:
+    app: windows-ga-fixture
+    os.kubevirt.io: windows
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: win2025
+        app: windows-ga-fixture
+    spec:
+      domain:
+        clock:
+          timer:
+            hpet:
+              present: false
+            hyperv: {}
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+          utc: {}
+        cpu:
+          cores: 4
+        devices:
+          disks:
+            # After the first install phase, rootdisk must boot before the ISO
+            # or setup loops on the "upgrade vs clean install" dialog.
+            # For a blank disk first boot, temporarily swap these (see README).
+            - name: rootdisk
+              bootOrder: 1
+              disk:
+                bus: sata
+            - name: installiso
+              bootOrder: 2
+              cdrom:
+                bus: sata
+            - name: virtiocontainerdisk
+              cdrom:
+                bus: sata
+            - name: sysprep
+              cdrom:
+                bus: sata
+          interfaces:
+            - name: default
+              masquerade: {}
+              model: e1000e
+        features:
+          acpi: {}
+          apic: {}
+          hyperv:
+            relaxed: {}
+            vapic: {}
+            spinlocks:
+              spinlocks: 8191
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: true
+        machine:
+          type: q35
+        memory:
+          guest: 8Gi
+        resources:
+          requests:
+            memory: 2Gi
+            cpu: "2"
+      networks:
+        - name: default
+          pod: {}
+      terminationGracePeriodSeconds: 60
+      volumes:
+        - name: rootdisk
+          persistentVolumeClaim:
+            claimName: win2025-rootdisk
+        - name: installiso
+          persistentVolumeClaim:
+            claimName: win2025-iso
+        - name: virtiocontainerdisk
+          containerDisk:
+            image: quay.io/shanemcd/virtio-container-disk:dev
+        - name: sysprep
+          sysprep:
+            configMap:
+              name: win2025-sysprep

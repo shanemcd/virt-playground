@@ -1,0 +1,2 @@
+NAME              STATUS   ROLES                         AGE     VERSION   INTERNAL-IP     EXTERNAL-IP   OS-IMAGE                              KERNEL-VERSION                 CONTAINER-RUNTIME
+api.crc.testing   Ready    control-plane,master,worker   3d11h   v1.35.5   192.168.127.2   <none>        Red Hat Enterprise Linux 9.6 (Plow)   5.14.0-570.22.1.el9_6.x86_64   cri-o://1.35.3-13.rhaos4.22.git5a749ba.el9

@@ -1,0 +1,79 @@
+# Static hostPath volumes on the CRC node.
+# TopoLVM only has ~15Gi free on the rhel VG; the Windows ISO (~7.6Gi) and
+# 40Gi root disk live under /var/home/shanemcd/virt-test-disks (host home, ~376Gi free).
+#
+# Prepare on the node before apply (already done for this cluster):
+#   mkdir -p /var/home/shanemcd/virt-test-disks/{win-iso,win2025-root}
+#   ln <windows-server-2025-eval.iso> /var/home/shanemcd/virt-test-disks/win-iso/disk.img
+#   truncate -s 40G /var/home/shanemcd/virt-test-disks/win2025-root/disk.img
+#   chown -R 107:107 /var/home/shanemcd/virt-test-disks/win2025-root
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: virt-test-win2025-iso
+  labels:
+    app: windows-ga-fixture
+spec:
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: hostpath-manual
+  volumeMode: Filesystem
+  hostPath:
+    path: /var/home/shanemcd/virt-test-disks/win-iso
+    type: Directory
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: virt-test-win2025-root
+  labels:
+    app: windows-ga-fixture
+spec:
+  capacity:
+    storage: 40Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: hostpath-manual
+  volumeMode: Filesystem
+  hostPath:
+    path: /var/home/shanemcd/virt-test-disks/win2025-root
+    type: Directory
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: win2025-iso
+  namespace: virt-test
+  labels:
+    app: windows-ga-fixture
+spec:
+  accessModes:
+    - ReadOnlyMany
+  storageClassName: hostpath-manual
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 8Gi
+  volumeName: virt-test-win2025-iso
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: win2025-rootdisk
+  namespace: virt-test
+  labels:
+    app: windows-ga-fixture
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: hostpath-manual
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 40Gi
+  volumeName: virt-test-win2025-root
