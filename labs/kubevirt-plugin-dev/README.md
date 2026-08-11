@@ -24,6 +24,7 @@ This lab covers the full dev loop: building upstream KubeVirt from source, deplo
 | 02 | [Deploy KubeVirt to CRC](02-deploy-kubevirt-to-crc.md) | Deploy upstream KubeVirt with the Plugins feature gate enabled |
 | 03 | [Write the Plugin](03-write-the-plugin.md) | Build a NodeHook plugin that queries guest agent for VirtIO driver versions |
 | 04 | [Deploy and Test](04-deploy-and-test.md) | Deploy the plugin to CRC and verify it fires on VM start |
+| — | [Windows qemu-ga fixture](windows-ga-fixture/) | Live `virt-test/win2025` VMI with `guest-get-devices` for VEP-385 |
 
 ## Architecture
 

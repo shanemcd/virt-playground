@@ -1,0 +1,12 @@
+NAME                                 AGE   STATUS    READY
+virtualmachine.kubevirt.io/win2025   50m   Running   True
+
+NAME                                         AGE     PHASE     IP           NODENAME          READY   LIVE-MIGRATABLE   PAUSED
+virtualmachineinstance.kubevirt.io/win2025   3m13s   Running   10.42.0.77   api.crc.testing   True    False             
+
+NAME                                     STATUS   VOLUME                   CAPACITY   ACCESS MODES   STORAGECLASS      VOLUMEATTRIBUTESCLASS   AGE   VOLUMEMODE
+persistentvolumeclaim/win2025-iso        Bound    virt-test-win2025-iso    8Gi        ROX            hostpath-manual   <unset>                 55m   Filesystem
+persistentvolumeclaim/win2025-rootdisk   Bound    virt-test-win2025-root   40Gi       RWO            hostpath-manual   <unset>                 55m   Filesystem
+
+NAME                              READY   STATUS    RESTARTS   AGE     IP           NODE              NOMINATED NODE   READINESS GATES
+pod/virt-launcher-win2025-q97kk   3/3     Running   0          3m13s   10.42.0.77   api.crc.testing   <none>           1/1

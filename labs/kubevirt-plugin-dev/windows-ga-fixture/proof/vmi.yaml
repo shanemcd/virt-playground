@@ -1,0 +1,231 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachineInstance
+metadata:
+  annotations:
+    kubevirt.io/latest-observed-api-version: v1
+    kubevirt.io/pci-topology-version: v3
+    kubevirt.io/storage-observed-api-version: v1
+    kubevirt.io/vm-generation: "3"
+  creationTimestamp: "2026-08-10T15:01:49Z"
+  finalizers:
+  - kubevirt.io/virtualMachineControllerFinalize
+  - kubevirt.io/foregroundDeleteVirtualMachine
+  generation: 10
+  labels:
+    app: windows-ga-fixture
+    kubevirt.io/domain: win2025
+    kubevirt.io/nodeName: api.crc.testing
+  name: win2025
+  namespace: virt-test
+  ownerReferences:
+  - apiVersion: kubevirt.io/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: VirtualMachine
+    name: win2025
+    uid: 7c5d1cbd-a0a9-481b-9b8c-9c24ac46b5c5
+  resourceVersion: "2386419"
+  uid: 0d83a997-9f7c-4356-aab1-4e10ab469fbb
+spec:
+  architecture: amd64
+  domain:
+    clock:
+      timer:
+        hpet:
+          present: false
+        hyperv:
+          present: true
+        pit:
+          present: true
+          tickPolicy: delay
+        rtc:
+          present: true
+          tickPolicy: catchup
+      utc: {}
+    cpu:
+      cores: 4
+      model: host-model
+    devices:
+      disks:
+      - bootOrder: 1
+        disk:
+          bus: sata
+        name: rootdisk
+      - bootOrder: 2
+        cdrom:
+          bus: sata
+          readonly: true
+          tray: closed
+        name: installiso
+      - cdrom:
+          bus: sata
+          readonly: true
+          tray: closed
+        name: virtiocontainerdisk
+      - cdrom:
+          bus: sata
+          readonly: true
+          tray: closed
+        name: sysprep
+      interfaces:
+      - macAddress: 02:3f:0f:75:08:33
+        masquerade: {}
+        model: e1000e
+        name: default
+    features:
+      acpi:
+        enabled: true
+      apic:
+        enabled: true
+      hyperv:
+        relaxed:
+          enabled: true
+        spinlocks:
+          enabled: true
+          spinlocks: 8191
+        vapic:
+          enabled: true
+      smm:
+        enabled: true
+    firmware:
+      bootloader:
+        efi:
+          secureBoot: true
+      serial: 4ea9a501-426c-4d53-80cd-9bc4df834ba8
+      uuid: e6fd28de-6d33-4335-acf0-f8cd70f4b938
+    machine:
+      type: q35
+    memory:
+      guest: 8Gi
+      maxGuest: 32Gi
+    resources:
+      requests:
+        cpu: "2"
+        memory: 2Gi
+  evictionStrategy: None
+  networks:
+  - name: default
+    pod: {}
+  terminationGracePeriodSeconds: 60
+  volumes:
+  - name: rootdisk
+    persistentVolumeClaim:
+      claimName: win2025-rootdisk
+  - name: installiso
+    persistentVolumeClaim:
+      claimName: win2025-iso
+  - containerDisk:
+      image: quay.io/shanemcd/virtio-container-disk:dev
+      imagePullPolicy: IfNotPresent
+    name: virtiocontainerdisk
+  - name: sysprep
+    sysprep:
+      configMap:
+        name: win2025-sysprep
+status:
+  activePods:
+    51b16aca-afe7-4780-b0e9-5726052bc17c: api.crc.testing
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2026-08-10T15:01:53Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: null
+    message: 'cannot migrate VMI: PVC win2025-rootdisk is not shared, live migration
+      requires that all PVCs must be shared (using ReadWriteMany access mode)'
+    reason: DisksNotLiveMigratable
+    status: "False"
+    type: LiveMigratable
+  - lastProbeTime: null
+    lastTransitionTime: null
+    status: "True"
+    type: StorageLiveMigratable
+  - lastProbeTime: "2026-08-10T15:04:44Z"
+    lastTransitionTime: null
+    status: "True"
+    type: AgentConnected
+  currentCPUTopology:
+    cores: 4
+  guestOSInfo:
+    id: mswindows
+    kernelRelease: "26100"
+    kernelVersion: "10.0"
+    machine: x86_64
+    name: Microsoft Windows
+    prettyName: Windows Server 2025 Datacenter Evaluation
+    version: MIcrosoft Windows Server 2025
+    versionId: "2025"
+  interfaces:
+  - infoSource: domain, guest-agent
+    interfaceName: Ethernet
+    ipAddress: 10.42.0.77
+    ipAddresses:
+    - 10.42.0.77
+    linkState: up
+    mac: 02:3f:0f:75:08:33
+    name: default
+    podInterfaceName: eth0
+    queueCount: 1
+  - infoSource: guest-agent
+    interfaceName: Loopback Pseudo-Interface 1
+    ipAddress: 127.0.0.1
+    ipAddresses:
+    - ::1
+    - 127.0.0.1
+  launcherContainerImageVersion: quay.io/kubevirt/virt-launcher@sha256:c89f733b1fdcc810d0b4326bbfc652a4cf3d25bc56cc8545f124d5cb71a1ce20
+  machine:
+    type: pc-q35-rhel9.8.0
+  memory:
+    guestAtBoot: 8Gi
+    guestCurrent: 8Gi
+    guestRequested: 8Gi
+  migrationMethod: BlockMigration
+  migrationTransport: Unix
+  nodeName: api.crc.testing
+  phase: Running
+  phaseTransitionTimestamps:
+  - phase: Pending
+    phaseTransitionTimestamp: "2026-08-10T15:01:49Z"
+  - phase: Scheduling
+    phaseTransitionTimestamp: "2026-08-10T15:01:49Z"
+  - phase: Scheduled
+    phaseTransitionTimestamp: "2026-08-10T15:01:53Z"
+  - phase: Running
+    phaseTransitionTimestamp: "2026-08-10T15:01:54Z"
+  qosClass: Burstable
+  runtimeUser: 107
+  selinuxContext: system_u:object_r:container_file_t:s0:c118,c991
+  virtualMachineRevisionName: revision-start-vm-7c5d1cbd-a0a9-481b-9b8c-9c24ac46b5c5-3
+  volumeStatus:
+  - name: installiso
+    persistentVolumeClaimInfo:
+      accessModes:
+      - ReadOnlyMany
+      capacity:
+        storage: 8Gi
+      claimName: win2025-iso
+      filesystemOverhead: "0.06"
+      requests:
+        storage: 8Gi
+      volumeMode: Filesystem
+    target: sdb
+  - name: rootdisk
+    persistentVolumeClaimInfo:
+      accessModes:
+      - ReadWriteOnce
+      capacity:
+        storage: 40Gi
+      claimName: win2025-rootdisk
+      filesystemOverhead: "0.06"
+      requests:
+        storage: 40Gi
+      volumeMode: Filesystem
+    target: sda
+  - name: sysprep
+    size: 1048576
+    target: sdd
+  - containerDiskVolume:
+      checksum: 1151414480
+    name: virtiocontainerdisk
+    target: sdc
