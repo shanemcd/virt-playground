@@ -89,7 +89,7 @@ MigrationPolicy and cluster config tune *how*; they do not invent DRS-style *whe
 ```go ! migrate-gate.go
 // Teaching sketch — gates reviewers think about.
 type MigrationGates struct {
-	// !focus(3:5)
+	// !focus(1:3)
 	StorageRWX     bool
 	BindingOK      bool // masquerade|passt|sriov …
 	CPUCompatible  bool

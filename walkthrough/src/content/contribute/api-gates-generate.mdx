@@ -27,7 +27,7 @@ New behavior is often hidden behind a **feature gate** until it is stable. Gates
 ```go ! gate.go
 // Teaching sketch — gate checked at the use site.
 if clusterConfig.GuestDeviceMetricsEnabled() {
-	// !focus(3:4)
+	// !focus(1:2)
 	devices, err := client.GetDevices()
 	// collect metrics…
 }

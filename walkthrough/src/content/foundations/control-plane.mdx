@@ -47,7 +47,7 @@ When the Pod is scheduled, virt-controller updates the VMI so `status.nodeName` 
 ```go ! handoff.go
 // Teaching sketch — the handoff signal on VMI status.
 type VirtualMachineInstanceStatus struct {
-	// !focus(3:4)
+	// !focus(1:2)
 	NodeName string
 	Phase    string // Scheduling → Scheduled → Running …
 }

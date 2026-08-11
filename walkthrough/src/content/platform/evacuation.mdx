@@ -87,7 +87,7 @@ The webhook also prevents naive eviction of `hp-volume-*` attachment pods that w
 ```go ! hotplug.go
 // Teaching sketch — eviction path special-cases attachment pods.
 if isHotplugAttachmentPod(pod) {
-	// !focus(3:4)
+	// !focus(1:1)
 	return denyOrProtect(pod)
 }
 ```

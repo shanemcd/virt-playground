@@ -51,7 +51,7 @@ A PVC mounts into the compute container (e.g. `/var/run/kubevirt-private/vmi-dis
 // filename under vmi-disks/<volume>/disk.img
 blockdev := map[string]any{
 	"driver":   "file",
-	// !focus(5:6)
+	// !focus(1:2)
 	"filename": "/var/run/kubevirt-private/vmi-disks/rootdisk/disk.img",
 	"read-only": false,
 }

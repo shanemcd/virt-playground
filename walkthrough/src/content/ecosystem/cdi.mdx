@@ -21,7 +21,7 @@ A **DataVolume** names a source (HTTP, registry, PVC clone, upload, blank, snaps
 ```go ! dv.go
 // Teaching sketch — one CR, population included.
 type DataVolumeSpec struct {
-	// !focus(3:5)
+	// !focus(1:2)
 	Source  DataVolumeSource // http, registry, pvc, upload, …
 	Storage *StorageSpec
 }

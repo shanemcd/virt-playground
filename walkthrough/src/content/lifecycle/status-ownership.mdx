@@ -26,8 +26,8 @@ Reviewer rule: if your controller did not create the object, **Patch** the field
 
 ```go ! patch.go
 // Teaching sketch — narrow patch, not full update.
-patch := []byte(`{"status":{"migrationState":{...}}}`)
-// !focus(3:4)
+patch := []byte("{\"status\":{\"migrationState\":{...}}}")
+// !focus(1:1)
 client.Patch(ctx, vmi, patch, "application/merge-patch+json")
 ```
 
