@@ -15,6 +15,7 @@ import {
   Title,
 } from "@patternfly/react-core"
 import { sectionOf } from "../curriculum"
+import { walkthroughByPath } from "../walkthroughs"
 import { ChapterPager } from "./chapter-pager"
 import { stepSlug } from "../step-slug"
 import { StepUrlSync } from "./step-url-sync"
@@ -63,6 +64,7 @@ export function ScrollyLayout({
   const rootMargin = useScrollTriggerMargin()
   const { pathname } = useLocation()
   const section = sectionOf(pathname)
+  const walkthrough = walkthroughByPath(pathname)
   const slugs = useMemo(() => {
     const used = new Set<string>()
     return steps.map((step, i) => stepSlug(step.title, i, used))
@@ -72,15 +74,26 @@ export function ScrollyLayout({
     <>
       <PageSection type="breadcrumb">
         <Breadcrumb>
-          <BreadcrumbItem>
-            <Link to={backHref}>Chapters</Link>
-          </BreadcrumbItem>
-          {section ? (
-            <BreadcrumbItem>
-              <Link to={section.chapters[0]?.href ?? "/"}>{section.title}</Link>
-            </BreadcrumbItem>
-          ) : null}
-          <BreadcrumbItem isActive>{introTitle}</BreadcrumbItem>
+          {walkthrough ? (
+            <>
+              <BreadcrumbItem>
+                <Link to="/walkthroughs">Walkthroughs</Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem isActive>{introTitle}</BreadcrumbItem>
+            </>
+          ) : (
+            <>
+              <BreadcrumbItem>
+                <Link to="/curriculum">Curriculum</Link>
+              </BreadcrumbItem>
+              {section ? (
+                <BreadcrumbItem>
+                  <Link to={`/curriculum/${section.id}`}>{section.title}</Link>
+                </BreadcrumbItem>
+              ) : null}
+              <BreadcrumbItem isActive>{introTitle}</BreadcrumbItem>
+            </>
+          )}
         </Breadcrumb>
       </PageSection>
 
@@ -121,7 +134,29 @@ export function ScrollyLayout({
         </SelectionProvider>
       </PageSection>
 
-      <ChapterPager outroBody={outroBody} />
+      {walkthrough ? (
+        <PageSection className="kv-pager-section" isWidthLimited>
+          {outroBody ? (
+            <Content className="kv-lede pf-v6-u-mb-lg">{outroBody}</Content>
+          ) : null}
+          <nav className="kv-chapter-pager" aria-label="Walkthrough">
+            <Link to="/walkthroughs" className="kv-pager-card">
+              <span className="kv-pager-dir">All walkthroughs</span>
+              <span className="kv-pager-title">Walkthroughs</span>
+            </Link>
+            <Link
+              to="/"
+              className="kv-pager-card kv-pager-card--next"
+              aria-label="Home"
+            >
+              <span className="kv-pager-dir">Home</span>
+              <span className="kv-pager-title">Back to overview</span>
+            </Link>
+          </nav>
+        </PageSection>
+      ) : (
+        <ChapterPager outroBody={outroBody} />
+      )}
     </>
   )
 }

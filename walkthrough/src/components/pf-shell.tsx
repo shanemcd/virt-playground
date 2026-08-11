@@ -14,8 +14,31 @@ import {
   ToolbarGroup,
   ToolbarItem,
 } from "@patternfly/react-core"
-import { sections } from "../curriculum"
 import { SiteSearch } from "./site-search"
+
+const nav = [
+  { href: "/", label: "Home", match: (p: string) => p === "/" },
+  {
+    href: "/curriculum",
+    label: "Curriculum",
+    match: (p: string) =>
+      p === "/curriculum" ||
+      p.startsWith("/curriculum/") ||
+      [
+        "/foundations",
+        "/data-plane",
+        "/lifecycle",
+        "/platform",
+        "/ecosystem",
+        "/contribute",
+      ].some((prefix) => p.startsWith(prefix)),
+  },
+  {
+    href: "/walkthroughs",
+    label: "Walkthroughs",
+    match: (p: string) => p.startsWith("/walkthroughs"),
+  },
+]
 
 export function PfShell({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
@@ -51,39 +74,24 @@ export function PfShell({ children }: { children: React.ReactNode }) {
               <ToolbarItem>
                 <Nav
                   variant="horizontal"
-                  aria-label="Section navigation"
+                  aria-label="Primary"
                   className="kv-top-nav"
                 >
                   <NavList>
-                    <NavItem
-                      itemId="home"
-                      to="/"
-                      isActive={pathname === "/"}
-                      component={(props) => {
-                        const { href, ...rest } = props
-                        return <Link {...rest} to={href ?? "/"} />
-                      }}
-                    >
-                      Home
-                    </NavItem>
-                    {sections.map((section) => {
-                      const first = section.chapters[0]?.href ?? "/"
-                      const active = pathname.startsWith(`/${section.id}`)
-                      return (
-                        <NavItem
-                          key={section.id}
-                          itemId={section.id}
-                          to={first}
-                          isActive={active}
-                          component={(props) => {
-                            const { href, ...rest } = props
-                            return <Link {...rest} to={href ?? first} />
-                          }}
-                        >
-                          {section.short}
-                        </NavItem>
-                      )
-                    })}
+                    {nav.map((item) => (
+                      <NavItem
+                        key={item.href}
+                        itemId={item.href}
+                        to={item.href}
+                        isActive={item.match(pathname)}
+                        component={(props) => {
+                          const { href, ...rest } = props
+                          return <Link {...rest} to={href ?? item.href} />
+                        }}
+                      >
+                        {item.label}
+                      </NavItem>
+                    ))}
                   </NavList>
                 </Nav>
               </ToolbarItem>

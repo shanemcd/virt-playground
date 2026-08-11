@@ -23,10 +23,10 @@ export function OutlineChapter({
       <PageSection type="breadcrumb">
         <Breadcrumb>
           <BreadcrumbItem>
-            <Link to="/">Chapters</Link>
+            <Link to="/curriculum">Curriculum</Link>
           </BreadcrumbItem>
           <BreadcrumbItem>
-            <Link to={section.chapters[0]?.href ?? "/"}>{section.title}</Link>
+            <Link to={`/curriculum/${section.id}`}>{section.title}</Link>
           </BreadcrumbItem>
           <BreadcrumbItem isActive>{chapter.title}</BreadcrumbItem>
         </Breadcrumb>

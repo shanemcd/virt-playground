@@ -55,6 +55,82 @@ body,
   margin-inline-end: var(--pf-t--global--spacer--sm);
 }
 
+.kv-home-hero {
+  padding-block-end: var(--pf-t--global--spacer--xl);
+}
+
+.kv-section-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--sm);
+}
+
+.kv-section-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--pf-t--global--spacer--md);
+  align-items: center;
+  padding: var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--lg);
+  border: var(--pf-t--global--border--width--regular) solid
+    var(--pf-t--global--border--color--default);
+  border-radius: var(--pf-t--global--border--radius--small);
+  background: var(--pf-t--global--background--color--primary--default);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.kv-section-row:hover {
+  border-color: var(--pf-t--global--border--color--hover);
+  box-shadow: var(--pf-t--global--box-shadow--sm);
+  text-decoration: none;
+  color: inherit;
+}
+
+.kv-section-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.kv-section-row-title {
+  font-weight: var(--pf-t--global--font--weight--heading--bold);
+  font-size: var(--pf-t--global--font--size--md);
+}
+
+.kv-section-row-blurb {
+  font-size: var(--pf-t--global--font--size--sm);
+  color: var(--pf-t--global--text--color--subtle);
+  line-height: 1.4;
+}
+
+.kv-section-row-meta {
+  font-size: var(--pf-t--global--font--size--xs);
+  color: var(--pf-t--global--text--color--subtle);
+  white-space: nowrap;
+}
+
+.kv-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--xs);
+  margin-block-start: var(--pf-t--global--spacer--sm);
+}
+
+@media (max-width: 768px) {
+  .kv-section-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .kv-section-row-meta {
+    grid-column: 2;
+  }
+}
+
 .kv-outline-badge {
   display: inline-block;
   margin-block-end: var(--pf-t--global--spacer--sm);

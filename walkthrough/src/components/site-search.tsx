@@ -99,7 +99,11 @@ export function SiteSearch() {
                   <span className="kv-search-result-meta">
                     {hit.sectionTitle}
                     {" · "}
-                    {hit.kind === "step" ? "Step" : "Chapter"}
+                    {hit.kind === "step"
+                      ? "Step"
+                      : hit.kind === "walkthrough"
+                        ? "Walkthrough"
+                        : "Chapter"}
                   </span>
                   <span className="kv-search-result-title">
                     {hit.kind === "step" ? hit.stepTitle : hit.chapterTitle}

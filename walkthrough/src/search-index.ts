@@ -1,9 +1,10 @@
 import { allChapters, sectionById } from "./curriculum"
 import { stepSlug } from "./step-slug"
+import { walkthroughs } from "./walkthroughs"
 
 export type SearchHit = {
   id: string
-  kind: "chapter" | "step"
+  kind: "chapter" | "step" | "walkthrough"
   sectionTitle: string
   chapterTitle: string
   stepTitle?: string
@@ -139,6 +140,19 @@ function buildIndex(): SearchHit[] {
     }
   }
 
+  for (const wt of walkthroughs) {
+    const text = [wt.title, wt.blurb, ...wt.tags].join(" ")
+    hits.push({
+      id: `walkthrough:${wt.id}`,
+      kind: "walkthrough",
+      sectionTitle: "Walkthroughs",
+      chapterTitle: wt.title,
+      href: wt.href,
+      snippet: wt.blurb,
+      haystack: text.toLowerCase(),
+    })
+  }
+
   return hits
 }
 
@@ -171,6 +185,7 @@ export function searchCurriculum(query: string, limit = 12): SearchHit[] {
       if (hit.haystack.includes(t)) score += 1
     }
     if (hit.kind === "step") score += 1
+    if (hit.kind === "walkthrough") score += 2
 
     const snippetSource =
       hit.kind === "step"

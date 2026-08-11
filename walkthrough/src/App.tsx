@@ -1,7 +1,15 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 import type { MDXContent } from "mdx/types"
 import { PfShell } from "./components/pf-shell"
-import { HomeChapters } from "./components/home-chapters"
+import { Home } from "./components/home"
+import {
+  CurriculumIndex,
+  CurriculumSectionPage,
+} from "./components/curriculum-hub"
+import {
+  WalkthroughPage,
+  WalkthroughsIndex,
+} from "./components/walkthroughs-hub"
 import { OutlineChapter } from "./components/outline-chapter"
 import { ScrollycodingChapter } from "./components/scrollycoding"
 import {
@@ -81,7 +89,17 @@ export function App() {
   return (
     <PfShell>
       <Routes>
-        <Route path="/" element={<HomeChapters />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/curriculum" element={<CurriculumIndex />} />
+        <Route
+          path="/curriculum/:sectionId"
+          element={<CurriculumSectionPage />}
+        />
+        <Route path="/walkthroughs" element={<WalkthroughsIndex />} />
+        <Route
+          path="/walkthroughs/:walkthroughId"
+          element={<WalkthroughPage />}
+        />
         {Object.entries(legacyRedirects).map(([from, to]) => (
           <Route key={from} path={from} element={<Navigate to={to} replace />} />
         ))}
