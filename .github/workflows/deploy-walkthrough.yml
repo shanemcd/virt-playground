@@ -31,9 +31,7 @@ jobs:
           cache: npm
           cache-dependency-path: walkthrough/package-lock.json
       - run: npm ci
-      - run: npm run build
-        env:
-          VITE_BASE: /virt-playground/
+      - run: npm run build -- --base /virt-playground/
       # SPA deep links need a 404 that serves the app shell.
       - run: cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3

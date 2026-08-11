@@ -27,22 +27,36 @@ type StepView = {
 }
 
 /** Same band math as Code Hike's defaultRootMargin, but higher than 50%. */
-function scrollTriggerMargin(vh: number, triggerRatio = 0.32) {
+function scrollTriggerMargin(vh: number, triggerRatio: number) {
   const y = Math.round(vh * triggerRatio)
   return `-${y - 2}px 0px -${vh - y - 2}px`
+}
+
+/** Narrow layouts dock a sticky panel up top — trigger in the steps band below it. */
+function triggerRatioForViewport() {
+  if (typeof window === "undefined") return 0.32
+  return window.matchMedia("(max-width: 992px)").matches ? 0.58 : 0.32
 }
 
 function useScrollTriggerMargin() {
   const [rootMargin, setRootMargin] = useState(() =>
     typeof window === "undefined"
       ? "-286px 0px -610px"
-      : scrollTriggerMargin(window.innerHeight),
+      : scrollTriggerMargin(window.innerHeight, triggerRatioForViewport()),
   )
   useEffect(() => {
-    const update = () => setRootMargin(scrollTriggerMargin(window.innerHeight))
+    const update = () =>
+      setRootMargin(
+        scrollTriggerMargin(window.innerHeight, triggerRatioForViewport()),
+      )
     update()
     window.addEventListener("resize", update)
-    return () => window.removeEventListener("resize", update)
+    const mq = window.matchMedia("(max-width: 992px)")
+    mq.addEventListener("change", update)
+    return () => {
+      window.removeEventListener("resize", update)
+      mq.removeEventListener("change", update)
+    }
   }, [])
   return rootMargin
 }
@@ -107,6 +121,15 @@ export function ScrollyLayout({
       <PageSection variant="secondary" isFilled>
         <SelectionProvider className="kv-scrolly-grid" rootMargin={rootMargin}>
           <StepUrlSync slugs={slugs} />
+          {/* Panel first in DOM so mobile sticky-top works; desktop grid-area puts it right. */}
+          <div className="kv-sticky-panel">
+            <Card isFullHeight className="kv-sticky-card">
+              <CardBody className="kv-sticky-panel-body">
+                <Selection from={steps.map((step) => step.panel)} />
+              </CardBody>
+            </Card>
+          </div>
+
           <div className="kv-steps-column">
             {steps.map((step, i) => (
               <Selectable
@@ -122,14 +145,6 @@ export function ScrollyLayout({
                 <Content>{step.body}</Content>
               </Selectable>
             ))}
-          </div>
-
-          <div className="kv-sticky-panel">
-            <Card isFullHeight className="kv-sticky-card">
-              <CardBody className="kv-sticky-panel-body">
-                <Selection from={steps.map((step) => step.panel)} />
-              </CardBody>
-            </Card>
           </div>
         </SelectionProvider>
       </PageSection>

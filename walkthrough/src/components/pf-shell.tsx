@@ -64,12 +64,17 @@ export function PfShell({ children }: { children: React.ReactNode }) {
         </MastheadBrand>
       </MastheadMain>
       <MastheadContent>
-        <Toolbar id="kv-walkthrough-toolbar" isFullHeight>
-          <ToolbarContent>
+        <Toolbar
+          id="kv-walkthrough-toolbar"
+          isFullHeight
+          className="kv-toolbar"
+        >
+          <ToolbarContent className="kv-toolbar-content">
             <ToolbarGroup
               variant="action-group-plain"
               align={{ default: "alignStart" }}
               alignItems="center"
+              className="kv-toolbar-nav"
             >
               <ToolbarItem>
                 <Nav
@@ -100,8 +105,9 @@ export function PfShell({ children }: { children: React.ReactNode }) {
               variant="action-group-plain"
               align={{ default: "alignEnd" }}
               alignItems="center"
+              className="kv-toolbar-search"
             >
-              <ToolbarItem>
+              <ToolbarItem className="kv-toolbar-search-item">
                 <SiteSearch />
               </ToolbarItem>
             </ToolbarGroup>

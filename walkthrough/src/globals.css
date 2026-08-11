@@ -125,6 +125,89 @@ body,
   .kv-section-row-meta {
     grid-column: 2;
   }
+
+  .kv-brand-sub {
+    display: none;
+  }
+
+  .kv-brand {
+    font-size: var(--pf-t--global--font--size--md);
+  }
+
+  .kv-masthead.pf-v6-c-masthead {
+    --pf-v6-c-masthead--MinHeight: auto;
+    flex-wrap: wrap;
+    row-gap: var(--pf-t--global--spacer--xs);
+  }
+
+  .kv-masthead .pf-v6-c-masthead__content {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .kv-toolbar.pf-v6-c-toolbar,
+  .kv-toolbar .pf-v6-c-toolbar__content,
+  .kv-toolbar .pf-v6-c-toolbar__content-section {
+    height: auto;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .kv-toolbar-content.pf-v6-c-toolbar__content {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: var(--pf-t--global--spacer--sm);
+    column-gap: var(--pf-t--global--spacer--sm);
+    padding-block: var(--pf-t--global--spacer--xs);
+  }
+
+  .kv-toolbar-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .kv-toolbar-search {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
+  .kv-top-nav.pf-v6-c-nav {
+    height: auto;
+  }
+
+  .kv-top-nav .pf-v6-c-nav__list {
+    flex-wrap: wrap;
+    height: auto;
+    row-gap: 0;
+  }
+
+  .kv-top-nav .pf-v6-c-nav__link {
+    height: auto;
+    padding-block: var(--pf-t--global--spacer--sm);
+    padding-inline: var(--pf-t--global--spacer--sm);
+    font-size: var(--pf-t--global--font--size--sm);
+  }
+
+  .kv-site-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .kv-search-results {
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: min(60vh, 24rem);
+  }
+
+  .kv-page .pf-v6-c-page__main-container {
+    margin-block-start: var(--pf-t--global--spacer--md);
+  }
+
+  .kv-pager-card {
+    min-height: 0;
+    padding: var(--pf-t--global--spacer--md);
+  }
 }
 
 .kv-outline-badge {
@@ -153,6 +236,10 @@ body,
   position: relative;
   width: min(18rem, 36vw);
   min-width: 10rem;
+}
+
+.kv-toolbar-search-item {
+  width: 100%;
 }
 
 .kv-site-search .pf-v6-c-text-input-group {
@@ -302,10 +389,11 @@ body,
   color: var(--pf-t--global--text--color--subtle);
 }
 
-/* Scrollycoding */
+/* Scrollycoding — panel is first in DOM; areas keep desktop prose | panel. */
 .kv-scrolly-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(26rem, 48%);
+  grid-template-areas: "steps panel";
   gap: var(--pf-t--global--spacer--xl);
   align-items: start;
   max-width: 90rem;
@@ -313,10 +401,12 @@ body,
 }
 
 .kv-steps-column {
+  grid-area: steps;
   display: flex;
   flex-direction: column;
   gap: var(--pf-t--global--spacer--md);
   margin-bottom: 70vh;
+  min-width: 0;
 }
 
 .kv-step {
@@ -337,12 +427,19 @@ body,
     inset 3px 0 0 var(--pf-t--global--border--color--brand--default);
 }
 
+.kv-step .pf-v6-c-content {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Wrapper stays sticky — PF Card sets position:relative and would win otherwise. */
 .kv-sticky-panel {
+  grid-area: panel;
   position: sticky;
   top: var(--pf-t--global--spacer--md);
   max-height: calc(100vh - 2 * var(--pf-t--global--spacer--md));
   align-self: start;
+  min-width: 0;
 }
 
 .kv-sticky-panel > .pf-v6-c-card {
@@ -356,6 +453,7 @@ body,
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   background: var(--pf-t--global--background--color--primary--default);
 }
 
@@ -373,16 +471,49 @@ body,
 @media (max-width: 992px) {
   .kv-scrolly-grid {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "panel"
+      "steps";
+    gap: var(--pf-t--global--spacer--md);
   }
 
   .kv-sticky-panel {
-    position: relative;
+    position: sticky;
     top: 0;
-    max-height: none;
+    z-index: 50;
+    max-height: 40vh;
+    margin-inline: calc(-1 * var(--pf-t--global--spacer--md));
+    padding-inline: var(--pf-t--global--spacer--md);
+    padding-block-end: var(--pf-t--global--spacer--sm);
+    background: var(--pf-t--global--background--color--secondary--default);
+    box-shadow: var(--pf-t--global--box-shadow--sm);
+  }
+
+  .kv-sticky-panel > .pf-v6-c-card {
+    max-height: 40vh;
   }
 
   .kv-steps-column {
-    margin-bottom: var(--pf-t--global--spacer--xl);
+    margin-bottom: var(--pf-t--global--spacer--2xl);
+    gap: var(--pf-t--global--spacer--sm);
+  }
+
+  .kv-step {
+    padding: var(--pf-t--global--spacer--md);
+  }
+
+  .kv-panel-figure {
+    min-height: 0;
+  }
+
+  .kv-sticky-panel .kv-code-pre,
+  .kv-sticky-panel .mermaid-diagram {
+    max-height: calc(40vh - 2rem);
+  }
+
+  .kv-code-pre {
+    font-size: var(--pf-t--global--font--size--sm);
+    padding: var(--pf-t--global--spacer--md);
   }
 }
 
@@ -426,6 +557,7 @@ body,
 .mermaid-diagram {
   width: 100%;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   padding: var(--pf-t--global--spacer--md);
 }
 
@@ -463,6 +595,7 @@ body,
   border-radius: var(--pf-t--global--border--radius--small);
   background: var(--pf-t--global--background--color--primary--default);
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .kv-callout {
