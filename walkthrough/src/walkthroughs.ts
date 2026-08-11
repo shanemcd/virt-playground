@@ -30,6 +30,18 @@ export const walkthroughs: Walkthrough[] = [
       "/contribute/api-gates-generate",
     ],
   }),
+  wt("guest-get-devices", {
+    title: "Wiring guest-get-devices end to end",
+    blurb:
+      "One new guest agent command, two doors: a proto verb, agent-poller parsing, and a debug REST endpoint plus a standing Prometheus gauge behind separate feature gates.",
+    status: "ready",
+    tags: ["guest-agent", "metrics", "feature-gates", "proto"],
+    relatedChapterHrefs: [
+      "/platform/metrics",
+      "/contribute/api-gates-generate",
+      "/foundations/node-path",
+    ],
+  }),
 ]
 
 export function walkthroughById(id: string): Walkthrough | undefined {

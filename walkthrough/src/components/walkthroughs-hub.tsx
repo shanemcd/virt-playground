@@ -20,9 +20,11 @@ import ArrowRightIcon from "@patternfly/react-icons/dist/esm/icons/arrow-right-i
 import { walkthroughById, walkthroughs } from "../walkthroughs"
 import { ScrollycodingChapter } from "./scrollycoding"
 import CmdSocket from "../content/walkthroughs/cmd-socket.mdx"
+import GuestGetDevices from "../content/walkthroughs/guest-get-devices.mdx"
 
 const readyMdx: Record<string, MDXContent> = {
   "/walkthroughs/cmd-socket": CmdSocket,
+  "/walkthroughs/guest-get-devices": GuestGetDevices,
 }
 
 export function WalkthroughsIndex() {
