@@ -31,7 +31,11 @@ function mdxExceptRaw(): Plugin {
   }
 }
 
+/** Project Pages live at https://<user>.github.io/virt-playground/ */
+const base = process.env.VITE_BASE ?? "/"
+
 export default defineConfig({
+  base,
   plugins: [mdxExceptRaw(), react({ include: /\.(jsx|tsx|mdx)$/ })],
   server: {
     port: 3010,

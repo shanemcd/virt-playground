@@ -1,0 +1,51 @@
+name: Deploy walkthrough
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "walkthrough/**"
+      - ".github/workflows/deploy-walkthrough.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: walkthrough
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: walkthrough/package-lock.json
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_BASE: /virt-playground/
+      # SPA deep links need a 404 that serves the app shell.
+      - run: cp dist/index.html dist/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: walkthrough/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

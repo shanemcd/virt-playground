@@ -7,10 +7,12 @@ import "./globals.css"
 import { App } from "./App"
 import { Code } from "./components/code"
 
+const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || "/"
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <MDXProvider components={{ Code }}>
-      <BrowserRouter>
+      <BrowserRouter basename={basename === "/" ? undefined : basename}>
         <App />
       </BrowserRouter>
     </MDXProvider>

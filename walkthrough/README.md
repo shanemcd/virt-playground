@@ -12,6 +12,12 @@ npm run dev
 
 Open [http://localhost:3010](http://localhost:3010).
 
+## Live site
+
+GitHub Pages: [https://shanemcd.github.io/virt-playground/](https://shanemcd.github.io/virt-playground/)
+
+Pushes to `main` that touch `walkthrough/` deploy via `.github/workflows/deploy-walkthrough.yml`.
+
 ## Tracks
 
 **Curriculum** — linear sections (`src/curriculum.ts`), chapter URLs `/<section>/<chapter>`. Hub at `/curriculum`.
