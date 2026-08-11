@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useSelectedIndex } from "codehike/utils/selection"
 
+export { stepSlug } from "../step-slug"
+
 function scrollStepIntoView(slug: string) {
   const el = document.getElementById(slug)
   const root = document.querySelector(".pf-v6-c-page__main") as HTMLElement | null
@@ -17,7 +19,7 @@ function scrollStepIntoView(slug: string) {
   el?.scrollIntoView({ block: "center", behavior: "instant" })
 }
 
-/** Keep the active scrolly step in the URL hash and restore it on load. */
+/** Keep the active scrolly step in the URL hash and restore it on load / search jumps. */
 export function StepUrlSync({ slugs }: { slugs: string[] }) {
   const [selectedIndex, setSelectedIndex] = useSelectedIndex()
   const location = useLocation()
@@ -26,11 +28,15 @@ export function StepUrlSync({ slugs }: { slugs: string[] }) {
   const writtenHash = useRef<string | null>(null)
   /** While restoring, ignore scroll-driven selection churn. */
   const restoring = useRef(false)
-  const didInitialRestore = useRef(false)
 
-  const restore = (hash: string) => {
+  // Restore when the hash is set externally (load, search, back/forward).
+  useEffect(() => {
+    const hash = decodeURIComponent(location.hash.replace(/^#/, ""))
+    if (!hash) return
+    if (writtenHash.current === `#${hash}`) return
     const i = slugs.indexOf(hash)
     if (i < 0) return
+
     restoring.current = true
     writtenHash.current = `#${hash}`
     setSelectedIndex(i)
@@ -39,27 +45,12 @@ export function StepUrlSync({ slugs }: { slugs: string[] }) {
       window.setTimeout(() => {
         restoring.current = false
         setSelectedIndex(i)
+        writtenHash.current = `#${hash}`
       }, 120)
     })
-  }
+  }, [location.hash, location.pathname, setSelectedIndex, slugs])
 
-  useEffect(() => {
-    const onPopState = () => {
-      const hash = decodeURIComponent(window.location.hash.replace(/^#/, ""))
-      if (hash) restore(hash)
-    }
-
-    if (!didInitialRestore.current) {
-      didInitialRestore.current = true
-      const hash = decodeURIComponent(location.hash.replace(/^#/, ""))
-      if (hash) restore(hash)
-    }
-
-    window.addEventListener("popstate", onPopState)
-    return () => window.removeEventListener("popstate", onPopState)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- restore once per mount + popstate
-  }, [slugs, setSelectedIndex])
-
+  // Persist the current step as we scroll / click (replace, no history spam).
   useEffect(() => {
     if (restoring.current) return
     const slug = slugs[selectedIndex]
@@ -84,20 +75,4 @@ export function StepUrlSync({ slugs }: { slugs: string[] }) {
   ])
 
   return null
-}
-
-export function stepSlug(title: string, index: number, used: Set<string>) {
-  const base =
-    title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || `step-${index + 1}`
-  let slug = base
-  let n = 2
-  while (used.has(slug)) {
-    slug = `${base}-${n}`
-    n += 1
-  }
-  used.add(slug)
-  return slug
 }

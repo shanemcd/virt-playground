@@ -15,6 +15,7 @@ import {
   ToolbarItem,
 } from "@patternfly/react-core"
 import { sections } from "../curriculum"
+import { SiteSearch } from "./site-search"
 
 export function PfShell({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
@@ -85,6 +86,15 @@ export function PfShell({ children }: { children: React.ReactNode }) {
                     })}
                   </NavList>
                 </Nav>
+              </ToolbarItem>
+            </ToolbarGroup>
+            <ToolbarGroup
+              variant="action-group-plain"
+              align={{ default: "alignEnd" }}
+              alignItems="center"
+            >
+              <ToolbarItem>
+                <SiteSearch />
               </ToolbarItem>
             </ToolbarGroup>
           </ToolbarContent>

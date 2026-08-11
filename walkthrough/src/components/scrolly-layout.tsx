@@ -16,7 +16,8 @@ import {
 } from "@patternfly/react-core"
 import { sectionOf } from "../curriculum"
 import { ChapterPager } from "./chapter-pager"
-import { StepUrlSync, stepSlug } from "./step-url-sync"
+import { stepSlug } from "../step-slug"
+import { StepUrlSync } from "./step-url-sync"
 
 type StepView = {
   title: string
