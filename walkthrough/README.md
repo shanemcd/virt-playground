@@ -21,7 +21,7 @@ Sections and chapters are defined in `src/curriculum.ts`. URLs look like `/<sect
 | **Foundations** | What KubeVirt is · Control plane · Node path · Isolation |
 | **Data plane** | Disks · Networking · Live migration |
 | **Lifecycle & API** | VM/RunStrategy · virt-api · Status ownership |
-| **Platform ops** | Operator/updates · Evacuation · Hotplug/devices |
+| **Platform ops** | Operator/updates · Metrics · Evacuation · Hotplug/devices |
 | **Ecosystem** | Map · CDI · MTV overview · MTV data path · Warm vs cold · Hand-off |
 | **Contributing** | Triage · API/gates/generate · Tests & PRs |
 

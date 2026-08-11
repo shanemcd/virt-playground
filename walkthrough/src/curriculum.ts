@@ -142,13 +142,20 @@ export const sections: Section[] = [
     title: "Platform ops",
     short: "Platform",
     blurb:
-      "Operator install and updates, evacuation/disruption, hotplug and host devices.",
+      "Operator install and updates, metrics paths, evacuation/disruption, hotplug and host devices.",
     chapters: [
       ch("platform", "operator-and-updates", {
         title: "Operator and updates",
         short: "Operator",
         blurb:
           "KubeVirt CR, component update order, RBAC skew, and the workload updater.",
+        status: "ready",
+      }),
+      ch("platform", "metrics", {
+        title: "Metrics",
+        short: "Metrics",
+        blurb:
+          "Cgroup vs domain stats, launcher cache, handler scrape, and where series live in the tree.",
         status: "ready",
       }),
       ch("platform", "evacuation", {

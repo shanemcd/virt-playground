@@ -22,6 +22,7 @@ import VmAndRunStrategy from "./content/lifecycle/vm-and-runstrategy.mdx"
 import VirtApi from "./content/lifecycle/virt-api.mdx"
 import StatusOwnership from "./content/lifecycle/status-ownership.mdx"
 import OperatorAndUpdates from "./content/platform/operator-and-updates.mdx"
+import Metrics from "./content/platform/metrics.mdx"
 import Evacuation from "./content/platform/evacuation.mdx"
 import HotplugAndDevices from "./content/platform/hotplug-and-devices.mdx"
 import EcosystemMap from "./content/ecosystem/map.mdx"
@@ -46,6 +47,7 @@ const readyMdx: Record<string, MDXContent> = {
   "/lifecycle/virt-api": VirtApi,
   "/lifecycle/status-ownership": StatusOwnership,
   "/platform/operator-and-updates": OperatorAndUpdates,
+  "/platform/metrics": Metrics,
   "/platform/evacuation": Evacuation,
   "/platform/hotplug-and-devices": HotplugAndDevices,
   "/ecosystem/map": EcosystemMap,
