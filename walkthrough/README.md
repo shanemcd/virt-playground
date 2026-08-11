@@ -14,7 +14,8 @@ Open [http://localhost:3010](http://localhost:3010).
 
 ## Live site
 
-GitHub Pages: [https://shanemcd.github.io/virt-playground/](https://shanemcd.github.io/virt-playground/)
+GitHub Pages: [https://shanemcd.com/virt-playground/](https://shanemcd.com/virt-playground/)  
+(`github.io` redirects there via your Pages custom domain.)
 
 Pushes to `main` that touch `walkthrough/` deploy via `.github/workflows/deploy-walkthrough.yml`.
 

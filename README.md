@@ -10,7 +10,7 @@ This repo documents how the full virtualization stack works, from hardware-assis
 
 PatternFly + Code Hike + Mermaid curriculum: upstream KubeVirt core (foundations through platform ops), then CDI/MTV ecosystem, then contributing.
 
-- [walkthrough/](walkthrough/) — live at [shanemcd.github.io/virt-playground](https://shanemcd.github.io/virt-playground/); locally `cd walkthrough && npm install && npm run dev` → [http://localhost:3010](http://localhost:3010)
+- [walkthrough/](walkthrough/) — live at [shanemcd.com/virt-playground](https://shanemcd.com/virt-playground/); locally `cd walkthrough && npm install && npm run dev` → [http://localhost:3010](http://localhost:3010)
 
 ### Architecture
 
