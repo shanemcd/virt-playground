@@ -6,6 +6,12 @@ This repo documents how the full virtualization stack works, from hardware-assis
 
 ## Contents
 
+### KubeVirt ecosystem for maintainers (interactive)
+
+PatternFly + Code Hike + Mermaid curriculum: upstream KubeVirt core (foundations through platform ops), then CDI/MTV ecosystem, then contributing.
+
+- [walkthrough/](walkthrough/) — `cd walkthrough && npm install && npm run dev` → [http://localhost:3010](http://localhost:3010)
+
 ### Architecture
 
 - [The Full Stack](docs/architecture.md) - Bottom-up walkthrough of the entire virtualization stack: hardware, KVM, QEMU, libvirt, virtio, KubeVirt, and OpenShift Virtualization

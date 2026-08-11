@@ -1,0 +1,104 @@
+## !intro Node path
+
+After `status.nodeName` is set, **virt-handler** on that node owns domain lifecycle. QEMU runs inside a **virt-launcher** Pod. They talk over local gRPC — not through the Kubernetes apiserver for every VMI action.
+
+## !!steps virt-handler: one per node
+
+virt-handler is a DaemonSet. It selects VMIs for its node, syncs each launcher, and exposes node-level metrics. It must stay up for many VMs, so per-VM blast radius is pushed into the launcher Pod. The handler is privileged enough to reach host paths and enter pod namespaces; the launcher is not.
+
+```mermaid ! daemonset
+flowchart TB
+  subgraph node [Node]
+    VH[virt-handler]
+    VL1[launcher for VMI A]
+    VL2[launcher for VMI B]
+  end
+  VMI_A[(VMI A)] --> VH
+  VMI_B[(VMI B)] --> VH
+  VH --> VL1
+  VH --> VL2
+```
+
+## !!steps virt-launcher: one per VMI
+
+The launcher Pod owns one guest. PID 1 is typically **virt-launcher-monitor**, which supervises **virt-launcher**, which talks to a per-pod **virtqemud** (not a host-wide libvirtd). That daemon owns the single QEMU process. If QEMU dies, the Pod fails — other VMs on the node keep running.
+
+```mermaid ! launcher
+flowchart TB
+  subgraph pod [virt-launcher Pod]
+    Mon[virt-launcher-monitor]
+    VL[virt-launcher]
+    VQ[virtqemud]
+    QEMU[qemu-kvm]
+    Mon --> VL
+    VL --> VQ --> QEMU
+  end
+```
+
+## !!steps Cmd vs Notify
+
+Two directions under `pkg/handler-launcher-com`:
+
+- **Cmd** — handler → launcher (sync domain, stats, guest RPCs, …)
+- **Notify** — launcher → handler (domain lifecycle events)
+
+Keep JSON and libvirt XML details inside the launcher when you can; keep RPC payloads boring and version-tolerant. Socket path layout matters for mixed-version upgrades.
+
+```mermaid ! rpc
+flowchart LR
+  VH[virt-handler]
+  VL[virt-launcher]
+  VH -->|Cmd| VL
+  VL -->|Notify| VH
+```
+
+## !!steps Syncing a domain
+
+Handler turns the VMI spec into a desired domain and asks the launcher to reconcile (define/start/update). Launcher drives virtqemud. Phase and conditions on the VMI reflect progress and failures.
+
+```mermaid ! sync
+flowchart TB
+  VMI[(VMI spec)] --> VH[virt-handler]
+  VH -->|Cmd sync / define| VL[virt-launcher]
+  VL --> QEMU[QEMU domain]
+  QEMU --> Status[VMI status]
+```
+
+## !!steps Consoles and subresources
+
+Interactive paths (serial console, VNC) typically go through **virt-api** subresources, then to the right node/launcher — not through virt-controller’s reconcile loop. When fixing console bugs, start at virt-api and the launcher endpoint, not the Pod template alone.
+
+```mermaid ! console
+flowchart TB
+  User[User / virtctl] --> VA[virt-api]
+  VA --> VH[virt-handler / node proxy]
+  VH --> VL[virt-launcher]
+  VL --> Guest[guest console]
+```
+
+## !!steps Guest agent and stats
+
+Optional guest agent inside the VM reports users, filesystems, network interfaces, device drivers, and more. The launcher polls the agent; the handler scrapes structured results for status and Prometheus metrics.
+
+```mermaid ! agent
+flowchart TB
+  Prom[Prometheus] -->|scrape| VH[virt-handler]
+  VH -->|Cmd stats / guest RPCs| VL[virt-launcher]
+  VL -->|QMP / guest-agent| Guest[Guest OS]
+```
+
+## !!steps Migrations in one picture
+
+Live migration adds migration objects and coordination, but the data plane is still node agents moving a domain between launchers. Controllers set up the intent; handlers and launchers execute the transfer. The next section goes deep.
+
+```mermaid ! migrate
+flowchart TB
+  Mig[VirtualMachineInstanceMigration] --> VC[virt-controller]
+  VC --> Src[source handler / launcher]
+  VC --> Dst[target handler / launcher]
+  Src -->|migration protocol| Dst
+```
+
+## !outro Continue
+
+Why a QEMU-in-Pod design works: hardware isolation, Kubernetes isolation, and the privileged handler’s job on the host.

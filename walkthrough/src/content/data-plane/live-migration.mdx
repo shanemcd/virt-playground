@@ -1,0 +1,95 @@
+## !intro Live migration
+
+Live migration moves a running domain from one node’s launcher to another with minimal guest downtime. Controllers set intent; handlers and launchers move memory and device state. KubeVirt does **not** give you VMware DRS — policies shape *how*, not autonomous *when*.
+
+## !!steps Entry: VirtualMachineInstanceMigration
+
+A `VirtualMachineInstanceMigration` (VMIM) is created by a user, drain/evacuation, or external tooling. virt-controller watches it and drives the workflow. The VMI UID stays stable; Pods come and go.
+
+```mermaid ! vmim
+flowchart TB
+  Actor[User / drain / tool] --> VMIM[VirtualMachineInstanceMigration]
+  VMIM --> VC[virt-controller]
+  VC --> VMI[same VMI object]
+```
+
+## !!steps Dual ActivePods
+
+Controller creates a **target** virt-launcher Pod; scheduler places it. Until cutover, the VMI tracks more than one pod in `status.ActivePods` (source + target). Handlers on both nodes participate — source sends, target receives.
+
+```mermaid ! dual
+flowchart TB
+  VMI[(VMI)]
+  VMI --> SrcPod[source launcher]
+  VMI --> DstPod[target launcher]
+  SrcH[source handler] --> SrcPod
+  DstH[target handler] --> DstPod
+```
+
+## !!steps Source and target handlers
+
+Source virt-handler asks its launcher to migrate via libvirt/QEMU migration APIs. Target launcher/virtqemud is primed to accept. Migration proxy/TLS and ports (commonly in the 49152+ range inside the pod) carry the stream. Premigration hooks can fix target-side domain XML for upgrade skew.
+
+```mermaid ! handlers
+flowchart LR
+  SrcH[source handler] -->|Cmd migrate| SrcL[source launcher]
+  SrcL -->|migration stream| DstL[target launcher]
+  DstH[target handler] --> DstL
+```
+
+## !!steps Pre-copy convergence
+
+Default is **pre-copy**: iteratively ship dirty pages while the guest runs, then a short pause for final state. If dirty rate beats transfer rate, migration never converges — then auto-converge, post-copy, or workload-disruption knobs (often via **MigrationPolicy**) enter the chat.
+
+```mermaid ! precopy
+flowchart TB
+  R1[Round: all memory] --> R2[Round: dirty pages]
+  R2 --> R2
+  R2 --> Switch[pause + final + activate target]
+```
+
+## !!steps Hard gates
+
+Migration fails closed without:
+
+- **RWX** (or another shared/block-migration strategy) for persistent disks  
+- A **migratable binding** (not pod-network bridge)  
+- **CPU model** compatibility (baseline models help)  
+- Healthy handlers on both nodes and open migration ports  
+
+```mermaid ! gates
+flowchart TB
+  Want[Want migration] --> RWX[RWX / disk strategy]
+  Want --> Bind[binding OK]
+  Want --> CPU[CPU compatible]
+  RWX --> Go[migration can proceed]
+  Bind --> Go
+  CPU --> Go
+```
+
+## !!steps Cutover and cleanup
+
+On switchover, source pauses, leftover state ships, target resumes, network announces (e.g. GARP). Source launcher completes and is GC’d; VMI status records migration timestamps. Abort paths exist when progress timeouts fire.
+
+```mermaid ! cutover
+flowchart TB
+  Stream[memory stream] --> Pause[source pause]
+  Pause --> Final[final state]
+  Final --> Run[target Running]
+  Run --> GC[source pod Completed / GC]
+```
+
+## !!steps MigrationPolicy vs DRS
+
+`MigrationPolicy` selects bandwidth, timeouts, auto-converge/post-copy, dedicated migration networks — applied by label selectors. It does **not** continuously rebalance load like DRS. Evacuation/descheduler/tools decide *when*; understand that split in design reviews.
+
+```mermaid ! policy
+flowchart TB
+  Pol[MigrationPolicy] -->|how| Mig[migration mechanics]
+  Ext[drain / descheduler / user] -->|when| VMIM[VMIM create]
+  VMIM --> Mig
+```
+
+## !outro Continue
+
+VM RunStrategy, virt-api admission/subresources, and who may write status.

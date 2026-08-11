@@ -1,0 +1,84 @@
+## !intro MTV overview
+
+**Migration Toolkit for Virtualization** (upstream **Forklift**, `kubev2v/forklift`) bulk-imports VMs from foreign hypervisors into a KubeVirt-based cluster. It produces inventory, copies disks, converts guests, and creates **VirtualMachine** objects — then KubeVirt runs them.
+
+## !!steps What MTV is not
+
+Not KubeVirt **live migration** (move a running domain between nodes). Not a general backup product. It is **import/migration from elsewhere**: vSphere, RHV/oVirt, OpenStack, OVA, and related sources, typically into OpenShift Virtualization.
+
+```mermaid ! not
+flowchart TB
+  MTV[MTV import] --> Target[VM CR on target cluster]
+  LM[KubeVirt live migration] --> Nodes[node A to node B]
+  MTV -.->|different problem| LM
+```
+
+## !!steps Providers
+
+Register a **source** provider (e.g. vCenter URL, creds, CA) and a **target** (the destination cluster). MTV uses the source API to inventory VMs, networks, and datastores. Broken TLS or inventory permissions fail before any disk copy.
+
+```mermaid ! providers
+flowchart LR
+  Src[Source provider] --> Inv[Inventory]
+  Tgt[Target provider] --> Dest[OpenShift / KubeVirt]
+  Inv --> Plan[Plan selects VMs]
+```
+
+## !!steps NetworkMap and StorageMap
+
+Reusable mappings: vSphere port groups → NADs / networks; datastores → StorageClasses. Plans reference maps so you do not re-encode topology per VM. Wrong maps produce “migrated but unreachable” or pending PVCs — often config, not virt-handler.
+
+```mermaid ! maps
+flowchart TB
+  NM[NetworkMap] --> Plan[Plan]
+  SM[StorageMap] --> Plan
+  Plan --> VMs[selected VMs]
+```
+
+## !!steps Plan CR
+
+A **Plan** picks VMs, attaches maps, and chooses **cold** or **warm** (next chapters). Execution creates per-VM work: disk transfer, conversion, VM CR creation. Parallelism (`MAX_VM_INFLIGHT` and friends) and quotas dominate large jobs.
+
+```mermaid ! plan
+flowchart TB
+  Plan[Plan] --> Copy[disk copy]
+  Copy --> Conv[virt-v2v conversion]
+  Conv --> VM[VirtualMachine CR]
+```
+
+## !!steps Cold path (sketch)
+
+Default mental model: shut down source (or use offline disk), copy full disk (often VDDK for VMware), run conversion, create VM, boot. Shorter wall-clock for many cases; longer downtime window.
+
+```mermaid ! cold
+flowchart LR
+  Down[source down / offline] --> Copy[full copy]
+  Copy --> V2V[virt-v2v]
+  V2V --> Boot[VM boot]
+```
+
+## !!steps Warm path (sketch)
+
+Initial full copy while source runs, then CBT incremental snapshots on a schedule; **cutover** shuts down, final delta, convert, boot. Less downtime, more moving parts (CBT limits, guest OS support). Details in Warm vs cold.
+
+```mermaid ! warm
+flowchart TB
+  Full[initial full] --> Inc[CBT increments]
+  Inc --> Cut[cutover]
+  Cut --> Final[final delta + v2v]
+```
+
+## !!steps Where code lives
+
+Forklift controllers, provider plugins, and migration pods — not `pkg/virt-controller`. Product UI may sit in console plugins. When filing issues, name **Plan/VM import name**, source type, cold/warm, and whether DV/PVC or conversion failed.
+
+```mermaid ! repos
+flowchart TB
+  Forklift[kubev2v/forklift] --> Pods[migration / conversion pods]
+  Forklift --> CDI[CDI PVCs]
+  Forklift --> KV[VirtualMachine API]
+```
+
+## !outro Continue
+
+The data path: VDDK, nbdkit, populators, and virt-v2v.
