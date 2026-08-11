@@ -124,14 +124,6 @@ export function HomeChapters() {
         </PageSection>
       ))}
 
-      <PageSection isWidthLimited>
-        <Content>
-          <small className="kv-muted">
-            Built with PatternFly, Code Hike, Mermaid, and Vite. Run{" "}
-            <code>npm install && npm run dev</code> from this directory.
-          </small>
-        </Content>
-      </PageSection>
     </>
   )
 }
