@@ -52,7 +52,7 @@ export function PfShell({ children }: { children: React.ReactNode }) {
             className="kv-brand"
           >
             <img
-              src="/kubevirt-logo.png"
+              src={`${import.meta.env.BASE_URL}kubevirt-logo.png`}
               alt=""
               width={28}
               height={28}
