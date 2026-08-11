@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import {
+  Button,
   Masthead,
   MastheadBrand,
   MastheadContent,
@@ -14,6 +16,8 @@ import {
   ToolbarGroup,
   ToolbarItem,
 } from "@patternfly/react-core"
+import SearchIcon from "@patternfly/react-icons/dist/esm/icons/search-icon"
+import TimesIcon from "@patternfly/react-icons/dist/esm/icons/times-icon"
 import { SiteSearch } from "./site-search"
 
 const nav = [
@@ -42,6 +46,10 @@ const nav = [
 
 export function PfShell({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation()
+
+  // Narrow viewports collapse search behind an icon so the nav row stays one line.
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  useEffect(() => setMobileSearchOpen(false), [pathname])
 
   const masthead = (
     <Masthead className="kv-masthead" inset={{ default: "insetLg" }}>
@@ -76,7 +84,7 @@ export function PfShell({ children }: { children: React.ReactNode }) {
               alignItems="center"
               className="kv-toolbar-nav"
             >
-              <ToolbarItem>
+              <ToolbarItem className="kv-toolbar-nav-item">
                 <Nav
                   variant="horizontal"
                   aria-label="Primary"
@@ -100,12 +108,27 @@ export function PfShell({ children }: { children: React.ReactNode }) {
                   </NavList>
                 </Nav>
               </ToolbarItem>
+              <ToolbarItem className="kv-mobile-search-toggle-item">
+                <Button
+                  variant="plain"
+                  aria-label={mobileSearchOpen ? "Close search" : "Search"}
+                  aria-expanded={mobileSearchOpen}
+                  className="kv-mobile-search-toggle"
+                  onClick={() => setMobileSearchOpen((v) => !v)}
+                >
+                  {mobileSearchOpen ? <TimesIcon /> : <SearchIcon />}
+                </Button>
+              </ToolbarItem>
             </ToolbarGroup>
             <ToolbarGroup
               variant="action-group-plain"
               align={{ default: "alignEnd" }}
               alignItems="center"
-              className="kv-toolbar-search"
+              className={
+                mobileSearchOpen
+                  ? "kv-toolbar-search kv-toolbar-search--open"
+                  : "kv-toolbar-search"
+              }
             >
               <ToolbarItem className="kv-toolbar-search-item">
                 <SiteSearch />

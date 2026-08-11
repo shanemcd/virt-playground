@@ -35,6 +35,18 @@ body,
   font-size: var(--pf-t--global--font--size--lg);
   font-weight: var(--pf-t--global--font--weight--heading--bold);
   color: var(--pf-t--global--text--color--regular);
+  text-decoration: none;
+}
+
+.kv-brand:hover {
+  text-decoration: none;
+  color: var(--pf-t--global--text--color--regular);
+}
+
+/* PF brand chrome draws a short underline under the logo link. */
+.kv-masthead .pf-v6-c-masthead__brand {
+  border: 0;
+  box-shadow: none;
 }
 
 .kv-brand-logo {
@@ -124,89 +136,6 @@ body,
 
   .kv-section-row-meta {
     grid-column: 2;
-  }
-
-  .kv-brand-sub {
-    display: none;
-  }
-
-  .kv-brand {
-    font-size: var(--pf-t--global--font--size--md);
-  }
-
-  .kv-masthead.pf-v6-c-masthead {
-    --pf-v6-c-masthead--MinHeight: auto;
-    flex-wrap: wrap;
-    row-gap: var(--pf-t--global--spacer--xs);
-  }
-
-  .kv-masthead .pf-v6-c-masthead__content {
-    flex: 1 1 100%;
-    min-width: 0;
-  }
-
-  .kv-toolbar.pf-v6-c-toolbar,
-  .kv-toolbar .pf-v6-c-toolbar__content,
-  .kv-toolbar .pf-v6-c-toolbar__content-section {
-    height: auto;
-    min-height: 0;
-    align-items: stretch;
-  }
-
-  .kv-toolbar-content.pf-v6-c-toolbar__content {
-    display: flex;
-    flex-wrap: wrap;
-    row-gap: var(--pf-t--global--spacer--sm);
-    column-gap: var(--pf-t--global--spacer--sm);
-    padding-block: var(--pf-t--global--spacer--xs);
-  }
-
-  .kv-toolbar-nav {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .kv-toolbar-search {
-    flex: 1 1 100%;
-    max-width: none;
-  }
-
-  .kv-top-nav.pf-v6-c-nav {
-    height: auto;
-  }
-
-  .kv-top-nav .pf-v6-c-nav__list {
-    flex-wrap: wrap;
-    height: auto;
-    row-gap: 0;
-  }
-
-  .kv-top-nav .pf-v6-c-nav__link {
-    height: auto;
-    padding-block: var(--pf-t--global--spacer--sm);
-    padding-inline: var(--pf-t--global--spacer--sm);
-    font-size: var(--pf-t--global--font--size--sm);
-  }
-
-  .kv-site-search {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .kv-search-results {
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-height: min(60vh, 24rem);
-  }
-
-  .kv-page .pf-v6-c-page__main-container {
-    margin-block-start: var(--pf-t--global--spacer--md);
-  }
-
-  .kv-pager-card {
-    min-height: 0;
-    padding: var(--pf-t--global--spacer--md);
   }
 }
 
@@ -740,4 +669,191 @@ body,
 
 .kv-pager-blurb strong {
   font-weight: inherit;
+}
+
+/* Mobile masthead — after every unconditional masthead/nav/search/pager rule
+   above so these win ties on selector specificity via source order, instead
+   of fighting the desktop styles with !important. */
+.kv-mobile-search-toggle {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .kv-brand-sub {
+    display: none;
+  }
+
+  .kv-brand {
+    font-size: var(--pf-t--global--font--size--md);
+  }
+
+  /* Brand on its own row; nav (+ search toggle) on the next. */
+  .kv-masthead.pf-v6-c-masthead {
+    --pf-v6-c-masthead--MinHeight: auto;
+    row-gap: 0;
+    align-items: stretch;
+  }
+
+  .kv-masthead .pf-v6-c-masthead__main {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 0;
+    padding-block: var(--pf-t--global--spacer--sm);
+  }
+
+  .kv-masthead .pf-v6-c-masthead__content {
+    grid-column: 1 / -1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .kv-toolbar.pf-v6-c-toolbar,
+  .kv-toolbar .pf-v6-c-toolbar__content {
+    height: auto;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  /* Groups live in content-section — stack nav row above search row. */
+  .kv-toolbar .pf-v6-c-toolbar__content-section {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    height: auto;
+    min-height: 0;
+    gap: var(--pf-t--global--spacer--xs);
+    padding-block: var(--pf-t--global--spacer--xs);
+  }
+
+  /* Nav row: pill tabs on the left, search toggle pinned to the right. */
+  .kv-toolbar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--pf-t--global--spacer--xs);
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .kv-toolbar-nav-item.pf-v6-c-toolbar__item {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .kv-mobile-search-toggle-item.pf-v6-c-toolbar__item {
+    flex: 0 0 auto;
+  }
+
+  .kv-mobile-search-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--pf-t--global--border--radius--small);
+    color: var(--pf-t--global--text--color--subtle);
+  }
+
+  .kv-mobile-search-toggle[aria-expanded="true"] {
+    background: var(--pf-t--global--background--color--secondary--default);
+    color: var(--pf-t--global--text--color--regular);
+  }
+
+  .kv-top-nav.pf-v6-c-nav {
+    height: auto;
+    width: 100%;
+  }
+
+  .kv-top-nav .pf-v6-c-nav__list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    height: auto;
+    width: 100%;
+    gap: var(--pf-t--global--spacer--xs);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .kv-top-nav .pf-v6-c-nav__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kv-top-nav .pf-v6-c-nav__item {
+    flex: 0 0 auto;
+  }
+
+  /* Pill tabs replace the desktop underline — reads calmer stacked this tight. */
+  .kv-top-nav .pf-v6-c-nav__link {
+    height: auto;
+    padding-block: 0.4rem;
+    padding-inline: var(--pf-t--global--spacer--sm);
+    border-radius: var(--pf-t--global--border--radius--pill, 999px);
+    border-block-end: 0;
+    font-size: var(--pf-t--global--font--size--sm);
+    white-space: nowrap;
+  }
+
+  .kv-top-nav .pf-v6-c-nav__link.pf-m-current,
+  .kv-top-nav .pf-v6-c-nav__link[aria-current="page"] {
+    background: color-mix(
+      in srgb,
+      var(--pf-t--global--color--brand--default) 12%,
+      transparent
+    ) !important;
+    border-block-end: 0;
+  }
+
+  /* Search row: collapsed by default, expands below the nav row when toggled.
+     PatternFly's own Toolbar CSS sets display on .pf-v6-c-toolbar__group at
+     equal specificity and its stylesheet can land after ours in dev — match
+     that class too so specificity (not injection order) decides the tie. */
+  .kv-toolbar-search.pf-v6-c-toolbar__group {
+    display: none;
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+
+  .kv-toolbar-search.kv-toolbar-search--open.pf-v6-c-toolbar__group {
+    display: block;
+    padding-block-start: var(--pf-t--global--spacer--xs);
+  }
+
+  .kv-toolbar-search-item.pf-v6-c-toolbar__item {
+    display: block;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .kv-toolbar-search--open .kv-site-search {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .kv-toolbar-search--open .pf-v6-c-text-input-group {
+    width: 100%;
+  }
+
+  .kv-toolbar-search--open .kv-search-results {
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: min(60vh, 24rem);
+  }
+
+  .kv-page .pf-v6-c-page__main-container {
+    margin-block-start: var(--pf-t--global--spacer--md);
+  }
+
+  .kv-pager-card {
+    min-height: 0;
+    padding: var(--pf-t--global--spacer--md);
+  }
 }
