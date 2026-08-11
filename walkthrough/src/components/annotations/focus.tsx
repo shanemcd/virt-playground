@@ -6,7 +6,7 @@ export const focus: AnnotationHandler = {
   onlyIfAnnotated: true,
   PreWithRef: PreWithFocus,
   Line: (props) => (
-    <InnerLine merge={props} className="kv-code-line px-2" />
+    <InnerLine merge={props} className="kv-code-line" />
   ),
   AnnotatedLine: ({ annotation, ...props }) => (
     <InnerLine merge={props} data-focus={true} className="kv-code-line-focus" />
